@@ -9,4 +9,6 @@ public class CouponSqlQueries
 	public static String UPDATE_COUPON_WHERE_ID = "update coupon set end_date = ?, price = ? where id = ?";
 	public static String ALL_COUPON = "SELECT * FROM coupon";
 	public static String COUPON_BY_TYPE = "SELECT * FROM coupon WHERE TYPE = '%1s'";
+	public static String ALL_COUPONS_BY_ID = "SELECT * FROM couponsystem.coupon WHERE id = '%1s'";
+
 }

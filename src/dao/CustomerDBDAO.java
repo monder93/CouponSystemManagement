@@ -30,15 +30,15 @@ public class CustomerDBDAO implements CustomerDAO
 	@Override
 	public void createCustomer(Customer customer) throws Exception 
 	{
-			// TODO Auto-generated method stub
-			if(isCustomerExist(customer))
-			{
-				//Exception 
-			}
-			else
-			{
-				insertCustomerToDatabase(customer);
-			}
+		// TODO Auto-generated method stub
+		if(isCustomerExist(customer))
+		{
+			//Exception 
+		}
+		else
+		{
+			insertCustomerToDatabase(customer);
+		}
 	}
 	//-----------------------------------------------------------------------------------------------------
 
@@ -82,31 +82,31 @@ public class CustomerDBDAO implements CustomerDAO
 	public void updateCustomer(Customer customer) throws SQLException
 	{
 		// TODO Auto-generated method stub
-				Connection tempConn = pool.getConnection();
+		Connection tempConn = pool.getConnection();
 
-				try 
-				{
-					if(isCustomerExist(customer))
-					{						
-						PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CustomerSqlQueries.UPDATE_CUSTOMER);
-						tempPreparedStatement.setString(1, customer.getPassword());
-						tempPreparedStatement.setLong(2, customer.getId());
-						tempPreparedStatement.executeUpdate();
-						System.out.println("customer  : " + customer.getCustName() + " updated successfull");		    		
-					}
-					else
-					{
-						System.out.println("customer : " + customer.getCustName() + " not exist in the database");
-					}
-				} 
-				catch (Exception e) 
-				{
-					// TODO: handle exception
-				}
-				finally
-				{
-					pool.returnConnection(tempConn);
-				}
+		try 
+		{
+			if(isCustomerExist(customer))
+			{						
+				PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CustomerSqlQueries.UPDATE_CUSTOMER);
+				tempPreparedStatement.setString(1, customer.getPassword());
+				tempPreparedStatement.setLong(2, customer.getId());
+				tempPreparedStatement.executeUpdate();
+				System.out.println("customer  : " + customer.getCustName() + " updated successfull");		    		
+			}
+			else
+			{
+				System.out.println("customer : " + customer.getCustName() + " not exist in the database");
+			}
+		} 
+		catch (Exception e) 
+		{
+			// TODO: handle exception
+		}
+		finally
+		{
+			pool.returnConnection(tempConn);
+		}
 	}
 	//----------------------------------------------------------------------------------------------------------
 	@Override
@@ -145,11 +145,11 @@ public class CustomerDBDAO implements CustomerDAO
 	{
 		// TODO Auto-generated method stub
 		ArrayList<Customer> tempCustomerArray = new ArrayList<>();
-		
+
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		
+
 		tempRs = tempStatement.executeQuery(CustomerSqlQueries.SELECT_ID_FROM_CUSTOMER);
 		while(tempRs.next())
 		{
@@ -167,7 +167,7 @@ public class CustomerDBDAO implements CustomerDAO
 		ArrayList<Coupon> arrayOfCustomersCoupons = new ArrayList<Coupon>(this.getCouponsByCustomerId(getCustomerId()));
 		return arrayOfCustomersCoupons;
 	}
-	
+
 	//----------------------------------------------------------------------------------------------------------
 
 	@Override
@@ -175,7 +175,7 @@ public class CustomerDBDAO implements CustomerDAO
 	{
 		Connection tempConn = pool.getConnection();
 		ResultSet  tempRs;
-		
+
 		try 
 		{
 			Statement  tempStatement = tempConn.createStatement();
@@ -198,7 +198,7 @@ public class CustomerDBDAO implements CustomerDAO
 		}
 		return false;
 	}
-	
+
 	//---------------------------------------------------------------------------------------------------------
 
 	@Override
@@ -305,7 +305,41 @@ public class CustomerDBDAO implements CustomerDAO
 		}
 		return tempCouponsArray;
 	}
-//-----------------------------------------------------------------------------------------------
+	//-----------------------------------------------------------------------------------------------
+	@Override
+	public Collection<Coupon> getCouponsByType(CouponType couponType) throws SQLException
+	{
+		// getting all the coupons for the company 
+		ArrayList<Coupon> ArrayOfCustomerCoupons = new ArrayList<>(this.getCoupons());
+		
+		ArrayList<Coupon> ArrayOfCouponsByType = new ArrayList<>();
+		// for each loop to get coupons for the type
+		for(Coupon c : ArrayOfCustomerCoupons)
+		{
+			if(c.getType()==couponType)
+				ArrayOfCouponsByType.add(c);
+		}
+			return ArrayOfCouponsByType;
+	}
+	//-----------------------------------------------------------------------------------------------
+
+	@Override
+	public Collection<Coupon> getCouponsByPrice(double price) throws SQLException 
+	{
+		// getting all the coupons for the company 
+		ArrayList<Coupon> ArrayOfCustomerCoupons = new ArrayList<>(this.getCoupons());
+		
+		ArrayList<Coupon> ArrayOfCouponsByPrice = new ArrayList<>();
+		// for each loop to get coupons for the type
+		for(Coupon c : ArrayOfCustomerCoupons)
+		{
+			if(c.getPrice()<=price)
+				ArrayOfCouponsByPrice.add(c);
+		}
+			return ArrayOfCouponsByPrice;
+	}
+	//-----------------------------------------------------------------------------------------------
+
 	public long getCustomerId() {
 		return customerId;
 	}
@@ -314,4 +348,6 @@ public class CustomerDBDAO implements CustomerDAO
 	public void setCustomerId(long customerId) {
 		this.customerId = customerId;
 	}
+
+	
 }

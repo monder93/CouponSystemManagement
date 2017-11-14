@@ -4,6 +4,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 
 import javaBeans.Coupon;
+import javaBeans.CouponType;
 import javaBeans.Customer;
 
 public interface CustomerDAO 
@@ -30,5 +31,9 @@ public interface CustomerDAO
 	public void insertCustomerToDatabase(Customer customer) throws SQLException , Exception;
 	
 	public Collection<Coupon> getCouponsByCustomerId(long id) throws SQLException;
+
+	public Collection<Coupon>  getCouponsByType(CouponType couponType) throws SQLException;
+	
+	public Collection<Coupon>  getCouponsByPrice(double price) throws SQLException;
 
 }

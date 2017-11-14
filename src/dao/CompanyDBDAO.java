@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -348,4 +349,57 @@ public class CompanyDBDAO implements CompanyDAO
 	{
 		this.companyId = companyId;
 	}
+	//--------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Collection<Coupon> getCompanyCouponByType(CouponType couponType) throws SQLException, Exception
+	{
+		// getting all the coupons for the company 
+		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>(this.getCouponsByCompanyId(getCompanyId()));
+		
+		ArrayList<Coupon> ArrayOfCouponsByType = new ArrayList<>();
+		// for each loop to get coupons for the type
+		for(Coupon c : ArrayOfCompanyCoupons)
+		{
+			if(c.getType().equals(couponType))
+				ArrayOfCouponsByType.add(c);
+		}
+			return ArrayOfCouponsByType;
+		
+	}
+	//--------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Collection<Coupon> getCompanyCouponByPrice(double price) throws SQLException, Exception 
+	{
+		// getting all the coupons for the company 
+		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>(this.getCouponsByCompanyId(getCompanyId()));
+		
+		ArrayList<Coupon> ArrayOfCouponsByPrice = new ArrayList<>();
+		// for each loop to get coupons for the type
+		for(Coupon c : ArrayOfCompanyCoupons)
+		{
+			if(c.getPrice()<price)
+				ArrayOfCouponsByPrice.add(c);
+		}
+			return ArrayOfCouponsByPrice;
+	}
+	//--------------------------------------------------------------------------------------------------------------
+
+	@Override
+	public Collection<Coupon> getCompanyCouponByDate(Date date) throws SQLException, Exception 
+	{
+		// getting all the coupons for the company 
+		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>(this.getCouponsByCompanyId(getCompanyId()));
+		
+		ArrayList<Coupon> ArrayOfCouponsByDate = new ArrayList<>();
+		// for each loop to get coupons for the type
+		for(Coupon c : ArrayOfCompanyCoupons)
+		{
+			if(c.getEndDate().before(date))
+				ArrayOfCouponsByDate.add(c);
+		}
+			return ArrayOfCouponsByDate;
+	}
+	
 }

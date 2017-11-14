@@ -1,9 +1,11 @@
 package dao;
 
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.Collection;
 import javaBeans.Company;
 import javaBeans.Coupon;
+import javaBeans.CouponType;
 
 public interface CompanyDAO 
 {
@@ -31,7 +33,12 @@ public interface CompanyDAO
 	public boolean isCompanyIdExist(Company company) throws SQLException , Exception;
 	
 	public void insertCompanyToDatabase(Company company) throws SQLException , Exception;
+	
+	public Collection<Coupon> getCompanyCouponByType(CouponType couponType) throws SQLException , Exception;
 
+	public Collection<Coupon> getCompanyCouponByPrice(double price) throws SQLException , Exception;
+	
+	public Collection<Coupon> getCompanyCouponByDate(Date date) throws SQLException , Exception;
 	
 	
 
