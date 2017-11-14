@@ -8,11 +8,11 @@ import javaBeans.CouponType;
 public interface CouponDAO 
 {
 	//------------------------------------------interface base functions----------------------------------------- 
-	public void createCoupon(Coupon coupon) throws SQLException;
+	public void createCoupon(Coupon coupon) throws Exception;
 
-	public void removeCoupon(Coupon coupon) throws SQLException;
+	public void removeCoupon(Coupon coupon) throws SQLException, Exception;
 
-	public void updateCoupon(Coupon coupon) throws SQLException;
+	public void updateCoupon(Coupon coupon) throws SQLException, Exception;
 
 	public Coupon getCoupon(long id) throws SQLException;
 
