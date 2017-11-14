@@ -14,10 +14,10 @@ public class TestConnectionPool
 		Connection c1 = ConnectionPool.getInstance().getConnection();
 		Connection c2 = ConnectionPool.getInstance().getConnection();
 		Connection c3 = ConnectionPool.getInstance().getConnection();
-		ConnectionPool.getInstance().closeAllConnections();
+		//ConnectionPool.getInstance().closeAllConnections();
 		Connection c4 = ConnectionPool.getInstance().getConnection();
 		Connection c5 = ConnectionPool.getInstance().getConnection();
-
+		
 		System.out.println("done");
 		System.out.println(c1);
 		System.out.println(c2);

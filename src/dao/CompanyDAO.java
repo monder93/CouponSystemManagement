@@ -8,6 +8,7 @@ import javaBeans.Coupon;
 public interface CompanyDAO 
 {
 
+	//------------------------------------------interface base functions----------------------------------------- 
 	public void createCompany(Company company) throws SQLException, Exception;
 
 	public void removeCompany(Company company) throws SQLException;
@@ -17,8 +18,13 @@ public interface CompanyDAO
 	public Company getCompany(long id) throws SQLException;
 
 	public Collection<Company> getAllCompanies() throws SQLException;
+	
+	public Collection<Coupon> getCoupons() throws SQLException;
 
 	public boolean login(String compName, String password) throws SQLException, Exception;
+	
+	//------------------------------------------interface plus functions----------------------------------------- 
+	public Collection<Coupon> getCouponsByCompanyId(long id) throws SQLException;
 	
 	public boolean isCompanyNameExist(Company company) throws SQLException , Exception;
 	
@@ -26,9 +32,8 @@ public interface CompanyDAO
 	
 	public void insertCompanyToDatabase(Company company) throws SQLException , Exception;
 
-	public Collection<Coupon> getCouponsByCompanyId(long id) throws SQLException;
 	
-	public Collection<Coupon> getCoupons(Company company) throws SQLException;
+	
 
 	
 }
