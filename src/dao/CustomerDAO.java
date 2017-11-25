@@ -7,6 +7,11 @@ import javaBeans.Coupon;
 import javaBeans.CouponType;
 import javaBeans.Customer;
 
+/**
+ * this is a interface to configure all the functions and operations that customer needs
+ * @author monder
+ * @version 1.0
+ */
 public interface CustomerDAO 
 {
 	//------------------------------------------interface base functions----------------------------------------- 
@@ -35,5 +40,15 @@ public interface CustomerDAO
 	public Collection<Coupon>  getCouponsByType(CouponType couponType) throws SQLException;
 	
 	public Collection<Coupon>  getCouponsByPrice(double price) throws SQLException;
+	
+	public void addCouponToCustomer(int customerId , int couponId) throws SQLException, Exception;
+
+	public void purchaseCoupon(Coupon coupon) throws SQLException, Exception;
+	
+	public boolean isValidAmount(Coupon coupon) throws SQLException, Exception;
+	
+	public boolean isValidDate(Coupon coupon) throws SQLException, Exception;
+
+	public boolean isFirstBuy(Coupon coupon) throws SQLException, Exception;
 
 }

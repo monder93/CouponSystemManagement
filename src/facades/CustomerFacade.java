@@ -13,7 +13,7 @@ public class CustomerFacade implements CouponClientFacade
 {
 	private CouponDBDAO coupondbdao;
 	private CustomerDBDAO customerdbdao;
-	
+
 	public CustomerFacade()
 	{
 		coupondbdao = new CouponDBDAO();
@@ -23,14 +23,22 @@ public class CustomerFacade implements CouponClientFacade
 
 	public void purchaseCoupon(Coupon coupon)
 	{
-		//coupondbdao.createCoupon(coupon);
+		try 
+		{
+			customerdbdao.purchaseCoupon(coupon);
+		} 
+		catch (Exception e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	//----------------------------------------------------------------------------------------
 
 	public Collection<Coupon> getAllPurchasedCoupons()
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
-		
+
 		try 
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCoupons();
@@ -47,7 +55,7 @@ public class CustomerFacade implements CouponClientFacade
 	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType coupontype)
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
-		
+
 		try 
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCouponsByType(coupontype);
@@ -64,7 +72,7 @@ public class CustomerFacade implements CouponClientFacade
 	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price)
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
-		
+
 		try 
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCouponsByPrice(price);
@@ -80,13 +88,20 @@ public class CustomerFacade implements CouponClientFacade
 	//----------------------------------------------------------------------------------------
 
 	@Override
-	public boolean login(String name, String password, String clientType)
+	public CouponClientFacade login(String name, String password, String clientType)
 	{
-		// TODO Auto-generated method stub
-		return true;
+		try
+		{
+			if(customerdbdao.login(name, password))
+			{
+				return this;
+			}
+		} 
+		catch (Exception e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
-	
-	
-	
-
 }

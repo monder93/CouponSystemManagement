@@ -6,9 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import exceptions.DuplicateEntryException;
+import exceptions.NullConnectionException;
+import exceptions.WrongDataInputException;
 import javaBeans.Company;
 import javaBeans.Coupon;
 import javaBeans.CouponType;
@@ -19,20 +23,31 @@ import utilities.CouponSqlQueries;
 import utilities.CustomerCouponSqlQueries;
 import utilities.converter;
 
+/**
+ * this class implements a Company data access object to perform operations with objects and database 
+ * Receives data from the database to the user || write data received from the user to the database 
+ * @author monder
+ * @version 1.0
+ */
 public class CompanyDBDAO implements CompanyDAO
 {
-
 	private ConnectionPool pool;
-	private long companyId;
+	private int companyId;
 
+	/**
+	 * this constructs a CompanyDBDAO and initialize the ConnectionPool variable 
+	 */
 	public CompanyDBDAO()
 	{
 		pool = ConnectionPool.getInstance();
 	}
-
 	//-------------------------------------------------------------------------------------------------------
+	/**
+	 * getting as a parameter company and adding it to the database if not exist
+	 * @param company instance object of a company 
+	 */
 	@Override
-	public void createCompany(Company company) throws SQLException, Exception 
+	public void createCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, DuplicateEntryException, NullConnectionException , Exception
 	{
 		if(isCompanyNameExist(company))
 		{
@@ -43,10 +58,13 @@ public class CompanyDBDAO implements CompanyDAO
 			insertCompanyToDatabase(company);
 		}
 	}
-
 	//-------------------------------------------------------------------------------------------------------
+	/**
+	 * getting as a parameter company and removing it from the database if exist
+	 * @param company instance object of a company
+	 */
 	@Override
-	public void removeCompany(Company company) throws SQLException 
+	public void removeCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -93,9 +111,12 @@ public class CompanyDBDAO implements CompanyDAO
 
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting as a parameter company and updating it in the database if exist
+	 * @param company instance object of a company
+	 */
 	@Override
-	public void updateCompany(Company company) throws SQLException 
+	public void updateCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
 	{
 		Connection tempConn = pool.getConnection();
 		try
@@ -123,10 +144,14 @@ public class CompanyDBDAO implements CompanyDAO
 			pool.returnConnection(tempConn);			
 		}
 	}
-
 	//-------------------------------------------------------------------------------------------------------
+	/**
+	 * getting as a parameter int id  and retrieve company data from  the database if exist
+	 * @param id id of a company
+	 * @return returns a company object 
+	 */
 	@Override
-	public Company getCompany(long id) throws SQLException 
+	public Company getCompany(long id) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException 
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
@@ -155,17 +180,20 @@ public class CompanyDBDAO implements CompanyDAO
 		return tempCompany;
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting all the companies from the database
+	 * @return return a collection<company> with all the companies inside it 
+	 */
 	@Override
-	public Collection<Company> getAllCompanies() throws SQLException 
+	public Collection<Company> getAllCompanies() throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException 
 	{
 		// TODO Auto-generated method stub
 		ArrayList<Company> tempCompanyArray = new ArrayList<>();
-		
+
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		
+
 		tempRs = tempStatement.executeQuery(CompanySqlQueries.SELECT_ID_FROM_COMPANY);
 		while(tempRs.next())
 		{
@@ -176,28 +204,36 @@ public class CompanyDBDAO implements CompanyDAO
 		return tempCompanyArray;
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting all the coupons of this company 
+	 * @return returning collection<Coupon> with all the coupons of this company inside it 
+	 */
 	@Override
-	public Collection<Coupon> getCoupons() throws SQLException 
+	public Collection<Coupon> getCoupons() throws ClassNotFoundException, InterruptedException, SQLException, ParseException, NullConnectionException
 	{
 		ArrayList<Coupon> arrayOfCompanyCoupons = new ArrayList<Coupon>(this.getCouponsByCompanyId(getCompanyId()));
 		return arrayOfCompanyCoupons;
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * login function to perform login operation
+	 * @param compName company name 
+	 * @param password password of the company
+	 * @return returns true if compName and password is correct and they are in the database , else returns false
+	 */
 	@Override
-	public boolean login(String compName, String password)  
+	public boolean login(String compName, String password)  throws ClassNotFoundException, InterruptedException, SQLException, WrongDataInputException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 		ResultSet  tempRs;
-		
+
 		try 
 		{
 			Statement  tempStatement = tempConn.createStatement();
 			tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ID_PASSWORD, compName,password));
 			if(tempRs.next())
 			{
-				setCompanyId(tempRs.getLong("ID"));
+				setCompanyId(tempRs.getInt("ID"));
 				return true;
 			}
 
@@ -214,9 +250,13 @@ public class CompanyDBDAO implements CompanyDAO
 		return false;
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting coupons by company ID
+	 * @param id id of the company 
+	 * @return returning a collection<Coupon> inside it coupons of company with the id in the parameter
+	 */
 	@Override
-	public Collection<Coupon> getCouponsByCompanyId(long id) throws SQLException 
+	public Collection<Coupon> getCouponsByCompanyId(long id) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
 	{
 		ArrayList<Coupon> tempCouponsArray = new ArrayList<>();
 
@@ -265,9 +305,13 @@ public class CompanyDBDAO implements CompanyDAO
 		return tempCouponsArray;
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * checks if company name is exist
+	 * @param Company company object
+	 * @return return true if company name is exist in the database , else return false
+	 */
 	@Override
-	public boolean isCompanyNameExist(Company company) throws SQLException, Exception 
+	public boolean isCompanyNameExist(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
@@ -289,9 +333,13 @@ public class CompanyDBDAO implements CompanyDAO
 		return false;
 	}
 	//-------------------------------------------------------------------------------------------------------
-
+	/**
+	 * checks if company Id is exist
+	 * @param Company company object
+	 * @return return true if company id is exist in the database , else return false
+	 */
 	@Override
-	public boolean isCompanyIdExist(Company company) throws SQLException, Exception 
+	public boolean isCompanyIdExist(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
@@ -313,8 +361,12 @@ public class CompanyDBDAO implements CompanyDAO
 		return false;
 	}
 	//-----------------------------------------------------------------------------------------------------------
+	/**
+	 * inserting company to the database 
+	 * @param company company object instance 
+	 */
 	@Override
-	public void insertCompanyToDatabase(Company company) throws SQLException, Exception
+	public void insertCompanyToDatabase(Company company)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException	
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -337,69 +389,159 @@ public class CompanyDBDAO implements CompanyDAO
 		System.out.println("company : " +company.getCompName() + " added successfully");
 		pool.returnConnection(tempConn);
 	}
+	//--------------------------------------------------------------------------------------------------------------
+	/**
+	 * getting company coupons by Type 
+	 * @param couponType type of the coupon
+	 * @return return collection<Coupon> inside it the company coupons by specific type
+	 */
+	@Override
+	public Collection<Coupon> getCompanyCouponByType(CouponType couponType)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
+	{
+		Connection tempConn = pool.getConnection();
+		ArrayList<Coupon> ArrayOfCouponsByType = new ArrayList<>();
+		Statement  tempStatement = tempConn.createStatement();
+		ResultSet  tempRs;
+
+		// getting all the COUPON_ID for the company with specific type
+		tempRs = tempStatement.executeQuery(String.format(CompanyCouponSqlQueries.SELECT_COUPON_COMPANY_BY_TYPE,companyId,couponType.toString()));
+
+
+		while ( tempRs.next() )
+		{
+			Coupon tempCoupon = new Coupon();
+			tempCoupon.setId(tempRs.getInt("id"));
+			tempCoupon.setTitle(tempRs.getString("title"));
+			tempCoupon.setStartDate(converter.stringToDate(tempRs.getString("start_date")));
+			tempCoupon.setEndDate(converter.stringToDate(tempRs.getString("end_date")));
+			tempCoupon.setAmount(tempRs.getInt("amount"));
+			tempCoupon.setType(CouponType.valueOf(tempRs.getString("type").trim()));
+			tempCoupon.setMessage(tempRs.getString("message"));
+			tempCoupon.setPrice(tempRs.getDouble("price"));
+			tempCoupon.setImage(tempRs.getString("image"));
+
+			ArrayOfCouponsByType.add(tempCoupon);		
+		}
+
+		pool.returnConnection(tempConn);
+
+		return ArrayOfCouponsByType;
+
+	}
+	//--------------------------------------------------------------------------------------------------------------
+	/**
+	 * getting company coupons by price limited 
+	 * @param price limit price
+	 * @return return collection<Coupon> inside it the company coupons by price limit
+	 */
+	@Override
+	public Collection<Coupon> getCompanyCouponByPrice(double price)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
+	{
+		Connection tempConn = pool.getConnection();
+		ArrayList<Coupon> ArrayOfCouponsByPrice = new ArrayList<>();
+		Statement  tempStatement = tempConn.createStatement();
+		ResultSet  tempRs;
+
+		// getting all the COUPON_ID for the company with date before date parameter
+		tempRs = tempStatement.executeQuery(String.format(CompanyCouponSqlQueries.SELECT_COUPON_COMPANY_BY_PRICE,companyId,price));
+
+
+		while ( tempRs.next() )
+		{
+			Coupon tempCoupon = new Coupon();
+			tempCoupon.setId(tempRs.getInt("id"));
+			tempCoupon.setTitle(tempRs.getString("title"));
+			tempCoupon.setStartDate(converter.stringToDate(tempRs.getString("start_date")));
+			tempCoupon.setEndDate(converter.stringToDate(tempRs.getString("end_date")));
+			tempCoupon.setAmount(tempRs.getInt("amount"));
+			tempCoupon.setType(CouponType.valueOf(tempRs.getString("type").trim()));
+			tempCoupon.setMessage(tempRs.getString("message"));
+			tempCoupon.setPrice(tempRs.getDouble("price"));
+			tempCoupon.setImage(tempRs.getString("image"));
+
+			ArrayOfCouponsByPrice.add(tempCoupon);		
+		}
+
+		pool.returnConnection(tempConn);
+
+		return ArrayOfCouponsByPrice;
+	}
+	//--------------------------------------------------------------------------------------------------------------
+	/**
+	 * getting company coupons by Date 
+	 * @param date max date for the coupon to be active
+	 * @return return collection<Coupon> inside it the company coupons by date
+	 */
+	@Override
+	public Collection<Coupon> getCompanyCouponByDate(Date date)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException 
+	{
+		Connection tempConn = pool.getConnection();
+		ArrayList<Coupon> ArrayOfCouponsByDate = new ArrayList<>();
+		Statement  tempStatement = tempConn.createStatement();
+		ResultSet  tempRs;
+
+		// getting all the COUPON_ID for the company with date before date parameter
+		tempRs = tempStatement.executeQuery(String.format(CompanyCouponSqlQueries.SELECT_COUPON_COMPANY_BY_DATE,companyId,date));
+
+
+		while ( tempRs.next() )
+		{
+			Coupon tempCoupon = new Coupon();
+			tempCoupon.setId(tempRs.getInt("id"));
+			tempCoupon.setTitle(tempRs.getString("title"));
+			tempCoupon.setStartDate(converter.stringToDate(tempRs.getString("start_date")));
+			tempCoupon.setEndDate(converter.stringToDate(tempRs.getString("end_date")));
+			tempCoupon.setAmount(tempRs.getInt("amount"));
+			tempCoupon.setType(CouponType.valueOf(tempRs.getString("type").trim()));
+			tempCoupon.setMessage(tempRs.getString("message"));
+			tempCoupon.setPrice(tempRs.getDouble("price"));
+			tempCoupon.setImage(tempRs.getString("image"));
+
+			ArrayOfCouponsByDate.add(tempCoupon);		
+		}
+
+		pool.returnConnection(tempConn);
+
+		return ArrayOfCouponsByDate;
+	}
 	//-----------------------------------------------------------------------------------------------------------
+	/**
+	 * connecting a coupon to a company 
+	 * @param companyId id of the company
+	 * @param couponId  id of the coupon
+	 */
+	@Override
+	public void addCouponToCompany(int companyId, int couponId)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
+	{
+		Connection tempConn = pool.getConnection();
 
+		//creating the preparedStatement
+		PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CompanyCouponSqlQueries.INSERT_COUPON_TO_COMPANY);
 
-	public long getCompanyId() 
+		tempPreparedStatement.setInt(1, companyId);
+		tempPreparedStatement.setInt(2, couponId);
+
+		// execute the preparedStatement
+		tempPreparedStatement.execute();
+
+		pool.returnConnection(tempConn);
+	}
+	//-----------------------------------------------------------------------------------------------------------
+	/**
+	 * 
+	 * @return company id 
+	 */
+	public int getCompanyId() 
 	{
 		return companyId;
 	}
-
-	public void setCompanyId(long companyId)
+	//-----------------------------------------------------------------------------------------------------------
+	/**
+	 * setting id to this company
+	 * @param companyId company id
+	 */
+	public void setCompanyId(int companyId)
 	{
 		this.companyId = companyId;
 	}
-	//--------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public Collection<Coupon> getCompanyCouponByType(CouponType couponType) throws SQLException, Exception
-	{
-		// getting all the coupons for the company 
-		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>(this.getCouponsByCompanyId(getCompanyId()));
-		
-		ArrayList<Coupon> ArrayOfCouponsByType = new ArrayList<>();
-		// for each loop to get coupons for the type
-		for(Coupon c : ArrayOfCompanyCoupons)
-		{
-			if(c.getType().equals(couponType))
-				ArrayOfCouponsByType.add(c);
-		}
-			return ArrayOfCouponsByType;
-		
-	}
-	//--------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public Collection<Coupon> getCompanyCouponByPrice(double price) throws SQLException, Exception 
-	{
-		// getting all the coupons for the company 
-		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>(this.getCouponsByCompanyId(getCompanyId()));
-		
-		ArrayList<Coupon> ArrayOfCouponsByPrice = new ArrayList<>();
-		// for each loop to get coupons for the type
-		for(Coupon c : ArrayOfCompanyCoupons)
-		{
-			if(c.getPrice()<price)
-				ArrayOfCouponsByPrice.add(c);
-		}
-			return ArrayOfCouponsByPrice;
-	}
-	//--------------------------------------------------------------------------------------------------------------
-
-	@Override
-	public Collection<Coupon> getCompanyCouponByDate(Date date) throws SQLException, Exception 
-	{
-		// getting all the coupons for the company 
-		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>(this.getCouponsByCompanyId(getCompanyId()));
-		
-		ArrayList<Coupon> ArrayOfCouponsByDate = new ArrayList<>();
-		// for each loop to get coupons for the type
-		for(Coupon c : ArrayOfCompanyCoupons)
-		{
-			if(c.getEndDate().before(date))
-				ArrayOfCouponsByDate.add(c);
-		}
-			return ArrayOfCouponsByDate;
-	}
-	
 }

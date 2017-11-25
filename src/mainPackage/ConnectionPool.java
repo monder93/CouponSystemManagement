@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import utilities.ConfigurationStrings;
+import utilities.Configurations_values;
 
 public class ConnectionPool 
 {
@@ -32,7 +32,7 @@ public class ConnectionPool
 	{
 		try 
 		{
-			Class.forName(ConfigurationStrings.driver);
+			Class.forName(Configurations_values.driver);
 		} 
 		catch (ClassNotFoundException e) 
 		{
@@ -40,12 +40,12 @@ public class ConnectionPool
 			System.out.println("ClassNotFoundException");
 		}
 
-		myConnections = new HashSet<>(ConfigurationStrings.MAX_CONNECTIONS);
-		while(myConnections.size()<ConfigurationStrings.MAX_CONNECTIONS)
+		myConnections = new HashSet<>(Configurations_values.MAX_CONNECTIONS);
+		while(myConnections.size()<Configurations_values.MAX_CONNECTIONS)
 		{
 			try 
 			{
-				myConnections.add(DriverManager.getConnection(ConfigurationStrings.url, ConfigurationStrings.username, ConfigurationStrings.password));
+				myConnections.add(DriverManager.getConnection(Configurations_values.url, Configurations_values.username, Configurations_values.password));
 			}
 			catch (SQLException e) 
 			{
@@ -109,11 +109,11 @@ public class ConnectionPool
 		synchronized (key)
 		{
 
-			if(myConnections.size()<ConfigurationStrings.MAX_CONNECTIONS)
+			if(myConnections.size()<Configurations_values.MAX_CONNECTIONS)
 			{
 				try 
 				{
-					key.wait(5000);
+					key.wait(Configurations_values.waitTime);
 				}
 				catch (InterruptedException e)
 				{

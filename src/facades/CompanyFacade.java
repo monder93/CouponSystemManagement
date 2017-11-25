@@ -14,7 +14,7 @@ public class CompanyFacade implements CouponClientFacade
 {
 	private CompanyDBDAO companydbdao;
 	private CouponDBDAO coupondbdao;
-	
+
 	public CompanyFacade()
 	{	
 		coupondbdao = new CouponDBDAO();
@@ -26,6 +26,8 @@ public class CompanyFacade implements CouponClientFacade
 		try
 		{
 			coupondbdao.createCoupon(coupon);
+			companydbdao.addCouponToCompany(companydbdao.getCompanyId(), coupon.getId());
+
 		} 
 		catch (Exception e) 
 		{
@@ -50,7 +52,7 @@ public class CompanyFacade implements CouponClientFacade
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
 	//----------------------------------------------------------------------------------------
 	public void updateCoupon(Coupon coupon)
@@ -69,7 +71,7 @@ public class CompanyFacade implements CouponClientFacade
 	public Coupon getCoupon(long id)
 	{
 		Coupon tempCoupon = new Coupon();
-		
+
 		try 
 		{
 			tempCoupon = coupondbdao.getCoupon(id);
@@ -85,7 +87,7 @@ public class CompanyFacade implements CouponClientFacade
 	public Collection<Coupon> getAllCoupon()
 	{
 		ArrayList<Coupon> ArrayOfCompanyCoupons = new ArrayList<>();
-		
+
 		try 
 		{
 			ArrayOfCompanyCoupons = (ArrayList<Coupon>) companydbdao.getCoupons();
@@ -101,7 +103,7 @@ public class CompanyFacade implements CouponClientFacade
 	public Collection<Coupon> getCouponByType(CouponType couponType)
 	{
 		ArrayList<Coupon> ArrayOfCompanyCouponsByType = new ArrayList<>();
-		
+
 		try
 		{
 			ArrayOfCompanyCouponsByType = (ArrayList<Coupon>) companydbdao.getCompanyCouponByType(couponType);
@@ -122,7 +124,7 @@ public class CompanyFacade implements CouponClientFacade
 	public Collection<Coupon> getCouponByPrice(double price)
 	{
 		ArrayList<Coupon> ArrayOfCompanyCouponsByPrice = new ArrayList<>();
-		
+
 		try
 		{
 			ArrayOfCompanyCouponsByPrice = (ArrayList<Coupon>) companydbdao.getCompanyCouponByPrice(price);
@@ -141,31 +143,42 @@ public class CompanyFacade implements CouponClientFacade
 	}
 	//----------------------------------------------------------------------------------------
 	//----------------------------------------------------------------------------------------
-		public Collection<Coupon> getCouponByDate(Date date)
-		{
-			ArrayList<Coupon> ArrayOfCompanyCouponsByDate = new ArrayList<>();
-			
-			try
-			{
-				ArrayOfCompanyCouponsByDate = (ArrayList<Coupon>) companydbdao.getCompanyCouponByDate(date);
-			}
-			catch (SQLException e) 
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			catch (Exception e) 
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return ArrayOfCompanyCouponsByDate;
-		}
-		//----------------------------------------------------------------------------------------
-	@Override
-	public boolean login(String name, String password, String clientType)
+	public Collection<Coupon> getCouponByDate(Date date)
 	{
-		// TODO Auto-generated method stub
-		return true;
+		ArrayList<Coupon> ArrayOfCompanyCouponsByDate = new ArrayList<>();
+
+		try
+		{
+			ArrayOfCompanyCouponsByDate = (ArrayList<Coupon>) companydbdao.getCompanyCouponByDate(date);
+		}
+		catch (SQLException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		catch (Exception e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return ArrayOfCompanyCouponsByDate;
+	}
+	//----------------------------------------------------------------------------------------
+	@Override
+	public CouponClientFacade login(String name, String password, String clientType)
+	{
+		try
+		{
+			if(companydbdao.login(name, password))
+			{
+				return this;
+			}
+		} 
+		catch (Exception e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 }

@@ -1,6 +1,12 @@
 package utilities;
 
-public class ConfigurationStrings 
+/**
+ * this class implements library for the strings
+ * @author monder
+ * @version 1.0
+ *
+ */
+public class Configurations_values 
 {
 
 	//-------------------------------------------------private final variables variables--------------------------------------
@@ -9,5 +15,7 @@ public class ConfigurationStrings
 	public static final String url = "jdbc:mysql://localhost:3306/johnbryceproject?useSSL=false";
 	public static final String username = "root";
 	public static final String password = "12345";
-	
+	public static final int sleepTime = 86400000;
+	public static final int waitTime = 5000;
+
 }

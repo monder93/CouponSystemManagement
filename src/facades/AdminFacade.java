@@ -12,9 +12,9 @@ import javaBeans.Customer;
 public class AdminFacade implements CouponClientFacade
 {
 
+	
 	private CompanyDBDAO companydbdao;
 	private CustomerDBDAO customerdbdao;
-	private CouponClientFacade ccf;
 
 	//-----------------------------------------------------------------------------------------------------
 	public AdminFacade()
@@ -174,15 +174,16 @@ public class AdminFacade implements CouponClientFacade
 		}
 		return tempArrayOfCustomers;
 	}
-	
+	//-----------------------------------------------------------------------------------------------------
+
 	@Override
-	public boolean login(String name, String password, String clientType) 
+	public CouponClientFacade login(String name, String password, String clientType) 
 	{
 		if (name.equals("admin") && password.equals("1234"))
 		{
-			return true;
+			return this;
 		}
 
-		return false;
+		return null;
 	}
 }

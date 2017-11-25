@@ -5,6 +5,11 @@ import java.util.Collection;
 import javaBeans.Coupon;
 import javaBeans.CouponType;
 
+/**
+ * this is a interface to configure all the functions and operations that coupon needs
+ * @author monder
+ * @version 1.0
+ */
 public interface CouponDAO 
 {
 	//------------------------------------------interface base functions----------------------------------------- 

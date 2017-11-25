@@ -15,15 +15,28 @@ import utilities.CouponSqlQueries;
 import utilities.CustomerCouponSqlQueries;
 import utilities.converter;
 
+/**
+ * this class implements a Coupon data access object to perform operations with objects and database 
+ * Receives data from the database to the user || write data received from the user to the database 
+ * @author monder
+ * @version 1.0
+ */
 public class CouponDBDAO implements CouponDAO
 {
 	private ConnectionPool pool;
 
+	/**
+	 * this constructs a CouponDBDAO and initialize the ConnectionPool variable 
+	 */
 	public CouponDBDAO()
 	{
 		pool = ConnectionPool.getInstance();
 	}
 	//-----------------------------------------------------------------------------------------------------
+	/**
+	 * getting as a parameter coupon and adding it to the database if not exist
+	 * @param coupon instance object of a coupon 
+	 */
 	@Override
 	public void createCoupon(Coupon coupon) throws Exception 
 	{
@@ -35,9 +48,14 @@ public class CouponDBDAO implements CouponDAO
 		else
 		{
 			insertCouponToDatabase(coupon);
+			//setting the generated id in the parameter coupon object inside insertCouponToDatebase
 		}
 	}
 	//-----------------------------------------------------------------------------------------------------
+	/**
+	 * getting as a parameter coupon and removing it from the database if exist
+	 * @param coupon instance object of a coupon
+	 */
 	@Override
 	public void removeCoupon(Coupon coupon) throws SQLException , Exception
 	{
@@ -65,6 +83,10 @@ public class CouponDBDAO implements CouponDAO
 
 	}
 	//-----------------------------------------------------------------------------------------------------
+	/**
+	 * getting as a parameter coupon and updating it in the database if exist
+	 * @param coupon instance object of a coupon
+	 */
 	@Override
 	public void updateCoupon(Coupon coupon) throws Exception 
 	{
@@ -89,7 +111,11 @@ public class CouponDBDAO implements CouponDAO
 
 	}
 	//-----------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting as a parameter int id  and retrieve Coupon data from  the database if exist
+	 * @param id id of a coupon
+	 * @return returns a coupon object 
+	 */
 	@Override
 	public Coupon getCoupon(long id) throws SQLException 
 	{
@@ -104,7 +130,7 @@ public class CouponDBDAO implements CouponDAO
 		Coupon tempCoupon = new Coupon();
 		while ( rs.next() )
 		{
-			tempCoupon.setId(rs.getLong("id"));
+			tempCoupon.setId(rs.getInt("id"));
 			tempCoupon.setTitle(rs.getString("title"));
 			tempCoupon.setStartDate(converter.stringToDate(rs.getString("start_date")));
 			tempCoupon.setEndDate(converter.stringToDate(rs.getString("end_date")));
@@ -120,7 +146,10 @@ public class CouponDBDAO implements CouponDAO
 		return tempCoupon;
 	}
 	//-----------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting all the coupon from the database
+	 * @return return a collection<Coupon> with all the coupons inside it 
+	 */
 	@Override
 	public Collection<Coupon> getAllCoupons() throws SQLException 
 	{
@@ -141,7 +170,10 @@ public class CouponDBDAO implements CouponDAO
 		return tempCouponArray;
 	}
 	//-----------------------------------------------------------------------------------------------------
-
+	/**
+	 * getting coupon from the database by type
+	 * @return return a collection<Coupon> with all the coupons inside it with specific type 
+	 */
 	@Override
 	public Collection<Coupon> getCouponByType(CouponType couponType) throws SQLException 
 	{
@@ -158,7 +190,7 @@ public class CouponDBDAO implements CouponDAO
 
 		while ( rs.next() )
 		{
-			tempCoupon.setId(rs.getLong("id"));
+			tempCoupon.setId(rs.getInt("id"));
 			tempCoupon.setTitle(rs.getString("title"));
 			tempCoupon.setStartDate(converter.stringToDate(rs.getString("start_date")));
 			tempCoupon.setEndDate(converter.stringToDate(rs.getString("end_date")));
@@ -167,7 +199,7 @@ public class CouponDBDAO implements CouponDAO
 			tempCoupon.setMessage(rs.getString("message"));
 			tempCoupon.setPrice(rs.getDouble("price"));
 			tempCoupon.setImage(rs.getString("image"));
-			
+
 			tempCouponArray.add(tempCoupon);
 		}
 		//returning the connection
@@ -176,7 +208,11 @@ public class CouponDBDAO implements CouponDAO
 		return tempCouponArray;
 	}
 	//---------------------------------------------------------------------------------------------
-
+	/**
+	 * checks if coupon title is exist
+	 * @param coupon coupon object
+	 * @return return true if coupon title is exist in the database , else return false
+	 */
 	@Override
 	public boolean isCouponExist(Coupon coupon) throws SQLException, Exception 
 	{
@@ -202,35 +238,39 @@ public class CouponDBDAO implements CouponDAO
 		return false;
 	}
 	//---------------------------------------------------------------------------------------------
+	/**
+	 * inserting coupon to the database 
+	 * @param coupon coupon object instance 
+	 */
 	@Override
 	public void insertCouponToDatabase(Coupon coupon) throws SQLException, Exception 
 	{
 		Connection tempConn = pool.getConnection();
 
-		try
-		{
-			//creating the preparedStatement
-			PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CouponSqlQueries.INSERT_COUPON);
+		//creating the preparedStatement
+		PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CouponSqlQueries.INSERT_COUPON,Statement.RETURN_GENERATED_KEYS);
 
-			tempPreparedStatement.setString(1, coupon.getTitle());
-			tempPreparedStatement.setString(2, converter.dateToString(coupon.getStartDate()));
-			tempPreparedStatement.setString(3, converter.dateToString(coupon.getEndDate()));
-			tempPreparedStatement.setInt(4, coupon.getAmount());
-			tempPreparedStatement.setString(5, coupon.getMessage());
-			tempPreparedStatement.setDouble(6, coupon.getPrice());
-			tempPreparedStatement.setString(7, coupon.getImage());
+		tempPreparedStatement.setString(1, coupon.getTitle());
+		tempPreparedStatement.setString(2, converter.dateToString(coupon.getStartDate()));
+		tempPreparedStatement.setString(3, converter.dateToString(coupon.getEndDate()));
+		tempPreparedStatement.setInt(4, coupon.getAmount());
+		tempPreparedStatement.setString(5, coupon.getMessage());
+		tempPreparedStatement.setDouble(6, coupon.getPrice());
+		tempPreparedStatement.setString(7, coupon.getImage());
 
-			// execute the preparedStatement
-			tempPreparedStatement.execute();
-		}
-		catch (SQLException e)
+		// execute the preparedStatement
+		tempPreparedStatement.execute();
+
+		ResultSet id;
+		id = tempPreparedStatement.getGeneratedKeys();
+
+		if(id.next())
 		{
-			// TODO: handle exception
+			coupon.setId(id.getInt(1));
 		}
-		finally 
-		{
-			pool.returnConnection(tempConn);
-		}
+
+		pool.returnConnection(tempConn);
+
 		System.out.println("coupon : " +coupon.getTitle() + " added successfully");
 
 	}

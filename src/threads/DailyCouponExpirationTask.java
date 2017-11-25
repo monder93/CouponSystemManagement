@@ -7,28 +7,28 @@ import java.util.Calendar;
 
 import dao.CouponDBDAO;
 import javaBeans.Coupon;
+import utilities.Configurations_values;
 
 public class DailyCouponExpirationTask implements Runnable
 {
 
 	private CouponDBDAO coupondbdao = new CouponDBDAO();
-	private boolean quit = false;
-
+	private boolean exit = false;
+	
+	ArrayList<Coupon> AllCoupons = new ArrayList<>();
 
 	@Override
 	public void run() 
 	{
 		//getting the date of the day
-
 		Date today = (Date) Calendar.getInstance().getTime();
 
-		while(!quit)
+		while(!exit)
 		{
-			//getting all the coupons from the database
-			ArrayList<Coupon> AllCoupons = new ArrayList<>();
-
 			try 
 			{
+				//getting all the coupons from the database
+				AllCoupons.clear();
 				AllCoupons = (ArrayList<Coupon>) coupondbdao.getAllCoupons();
 			}
 			catch (SQLException e) 
@@ -38,7 +38,6 @@ public class DailyCouponExpirationTask implements Runnable
 			}
 
 			//for each loop to check if the coupon is expired and removing it from the database
-
 			for(Coupon c : AllCoupons)
 			{
 				if(c.getEndDate().before(today))
@@ -58,7 +57,7 @@ public class DailyCouponExpirationTask implements Runnable
 			// sleep time of the thread .. for repeating 
 			try
 			{
-				Thread.sleep(24*60*60*1000);
+				Thread.sleep(Configurations_values.sleepTime);
 			}
 			catch(InterruptedException e)
 			{
