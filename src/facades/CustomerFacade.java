@@ -4,72 +4,93 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import dao.CouponDBDAO;
 import dao.CustomerDBDAO;
+import exceptions.*;
+import exceptionsHandlers.*;
+import javaBeans.ClientType;
 import javaBeans.Coupon;
 import javaBeans.CouponType;
 
+/**
+ * 
+ * The CustomerFacade class is used by the customer users of the CouponSystem.
+ * It grants them access to all of the relevant methods for their uses.
+ *
+ */
 public class CustomerFacade implements CouponClientFacade
 {
-	private CouponDBDAO coupondbdao;
 	private CustomerDBDAO customerdbdao;
 
+	/**
+	 * the constructor of the CustomerFacade
+	 * it initialize the CustomerDBDAO 
+	 */
 	public CustomerFacade()
 	{
-		coupondbdao = new CouponDBDAO();
 		customerdbdao = new CustomerDBDAO();
 	}
 	//----------------------------------------------------------------------------------------
-
+	/**
+	 * Receives a coupon instance and updates it's purchase in the database
+	 * @param coupon a coupon instance
+	 */
 	public void purchaseCoupon(Coupon coupon)
 	{
 		try 
 		{
 			customerdbdao.purchaseCoupon(coupon);
-		} 
-		catch (Exception e) 
+		}
+		catch (ClassNotFoundException | InterruptedException | SQLException | NullConnectionException| UnAvailableCouponException | NullPointerException e) 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			CouponExceptionHandler.handle(e);
 		}
 	}
 	//----------------------------------------------------------------------------------------
-
-	public Collection<Coupon> getAllPurchasedCoupons()
+	/**
+	 * getting all the purchased coupons for the current customer
+	 * @return an ArrayList of all the current customer's purchased coupons
+	 */
+	public Collection<Coupon> getAllPurchasedCoupons() throws SQLException
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
 		try 
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCoupons();
-		}
-		catch (SQLException e)
+		} 
+		catch (ClassNotFoundException | InterruptedException | NullConnectionException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			CustomerExceptionHandler.handle(e);
 		}
+
 		return allCustomerCoupons;
 	}
 	//----------------------------------------------------------------------------------------
-
-	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType coupontype)
+	/**
+	 * getting all the purchased coupons for the current customer by type
+	 * @return an ArrayList of all the current customer's purchased coupons by type
+	 */
+	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType coupontype) throws SQLException
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
 		try 
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCouponsByType(coupontype);
-		}
-		catch (SQLException e)
+		} 
+		catch (ClassNotFoundException | InterruptedException | NullConnectionException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			CustomerExceptionHandler.handle(e);
 		}
+
 		return allCustomerCoupons;
 	}
 	//----------------------------------------------------------------------------------------
-
-	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price)
+	/**
+	 * getting all the purchased coupons for the current customer by price
+	 * @return an ArrayList of all the current customer's purchased coupons by price
+	 */
+	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price) throws SQLException
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
@@ -77,31 +98,36 @@ public class CustomerFacade implements CouponClientFacade
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCouponsByPrice(price);
 		}
-		catch (SQLException e)
+		catch (ClassNotFoundException | InterruptedException | NullConnectionException e) 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			CustomerExceptionHandler.handle(e);
 		}
+
 		return allCustomerCoupons;
 	}
 
 	//----------------------------------------------------------------------------------------
-
+	/**
+	 * checks the database for a customer entry with the given name and the given password
+	 * returns this instance if exist , else return null
+	 */
 	@Override
-	public CouponClientFacade login(String name, String password, String clientType)
+	public CouponClientFacade login(String name, String password, ClientType clientType)
 	{
+
 		try
 		{
 			if(customerdbdao.login(name, password))
 			{
 				return this;
 			}
-		} 
-		catch (Exception e) 
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		catch (ClassNotFoundException | InterruptedException | SQLException | WrongDataInputException
+				| NullConnectionException e) 
+		{
+			CustomerExceptionHandler.handle(e);
+		}
+
 		return null;
 	}
 }

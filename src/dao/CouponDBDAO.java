@@ -5,8 +5,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+
+import exceptions.DuplicateEntryException;
+import exceptions.NullConnectionException;
+import exceptions.UnAvailableCouponException;
 import javaBeans.Coupon;
 import javaBeans.CouponType;
 import mainPackage.ConnectionPool;
@@ -38,12 +44,11 @@ public class CouponDBDAO implements CouponDAO
 	 * @param coupon instance object of a coupon 
 	 */
 	@Override
-	public void createCoupon(Coupon coupon) throws Exception 
+	public void createCoupon(Coupon coupon) throws SQLException, ClassNotFoundException, InterruptedException, DuplicateEntryException, NullConnectionException 
 	{
 		if(isCouponExist(coupon))
 		{
-			//exception
-			System.out.println("Coupon exist");
+			throw new DuplicateEntryException("the user tried to create a coupon with a title that already exist in the database");
 		}
 		else
 		{
@@ -57,11 +62,12 @@ public class CouponDBDAO implements CouponDAO
 	 * @param coupon instance object of a coupon
 	 */
 	@Override
-	public void removeCoupon(Coupon coupon) throws SQLException , Exception
+	public void removeCoupon(Coupon coupon) throws SQLException, ClassNotFoundException, InterruptedException, DuplicateEntryException, NullConnectionException,UnAvailableCouponException,NullPointerException
 	{
 		Connection tempConn = pool.getConnection();
 		if(isCouponExist(coupon))
 		{
+			System.out.println("loggeddddd");
 			//deleting the coupon from coupon table
 			Statement  tempDeleteStatement = tempConn.createStatement();
 			tempDeleteStatement.execute(String.format(CouponSqlQueries.DELETE_COUPON_BY_ID,coupon.getId()));
@@ -78,17 +84,20 @@ public class CouponDBDAO implements CouponDAO
 		}
 		else
 		{
-			System.out.println("coupon not exist");
+			pool.returnConnection(tempConn);
+			throw new UnAvailableCouponException("coupon not exist - cant remove");
 		}
+		System.out.println("out");
 
 	}
 	//-----------------------------------------------------------------------------------------------------
 	/**
 	 * getting as a parameter coupon and updating it in the database if exist
 	 * @param coupon instance object of a coupon
+	 * @throws UnAvailableCouponException 
 	 */
 	@Override
-	public void updateCoupon(Coupon coupon) throws Exception 
+	public void updateCoupon(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, ParseException, NullConnectionException, UnAvailableCouponException 
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -106,7 +115,7 @@ public class CouponDBDAO implements CouponDAO
 		}
 		else
 		{
-			System.out.println("coupon not exist");
+			throw new UnAvailableCouponException("coupon not exist - cant update");
 		}
 
 	}
@@ -117,7 +126,7 @@ public class CouponDBDAO implements CouponDAO
 	 * @return returns a coupon object 
 	 */
 	@Override
-	public Coupon getCoupon(long id) throws SQLException 
+	public Coupon getCoupon(long id) throws ClassNotFoundException, InterruptedException, SQLException, ParseException, NullConnectionException , UnAvailableCouponException
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -128,17 +137,21 @@ public class CouponDBDAO implements CouponDAO
 		//adding the data from the mysql table to the correct members in the coupon instance
 
 		Coupon tempCoupon = new Coupon();
-		while ( rs.next() )
+		if ( rs.next() )
 		{
 			tempCoupon.setId(rs.getInt("id"));
 			tempCoupon.setTitle(rs.getString("title"));
-			tempCoupon.setStartDate(converter.stringToDate(rs.getString("start_date")));
-			tempCoupon.setEndDate(converter.stringToDate(rs.getString("end_date")));
+			tempCoupon.setStartDate(rs.getDate("START_DATE"));
+			tempCoupon.setEndDate(rs.getDate("END_DATE"));
 			tempCoupon.setAmount(rs.getInt("amount"));
 			tempCoupon.setType(CouponType.valueOf(rs.getString("type").trim()));
 			tempCoupon.setMessage(rs.getString("message"));
 			tempCoupon.setPrice(rs.getDouble("price"));
 			tempCoupon.setImage(rs.getString("image"));
+		}
+		else
+		{
+			throw new UnAvailableCouponException("no coupon found in the database with the given id ");
 		}
 		//returning the connection
 		pool.returnConnection(tempConn);
@@ -149,11 +162,11 @@ public class CouponDBDAO implements CouponDAO
 	/**
 	 * getting all the coupon from the database
 	 * @return return a collection<Coupon> with all the coupons inside it 
+	 * @throws UnAvailableCouponException 
 	 */
 	@Override
-	public Collection<Coupon> getAllCoupons() throws SQLException 
+	public Collection<Coupon> getAllCoupons() throws ClassNotFoundException, InterruptedException, SQLException, ParseException, NullConnectionException, UnAvailableCouponException
 	{
-		// TODO Auto-generated method stub
 		ArrayList<Coupon> tempCouponArray = new ArrayList<>();
 
 		Connection tempConn = pool.getConnection();
@@ -175,7 +188,7 @@ public class CouponDBDAO implements CouponDAO
 	 * @return return a collection<Coupon> with all the coupons inside it with specific type 
 	 */
 	@Override
-	public Collection<Coupon> getCouponByType(CouponType couponType) throws SQLException 
+	public Collection<Coupon> getCouponByType(CouponType couponType) throws ClassNotFoundException, InterruptedException, SQLException, ParseException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -214,7 +227,7 @@ public class CouponDBDAO implements CouponDAO
 	 * @return return true if coupon title is exist in the database , else return false
 	 */
 	@Override
-	public boolean isCouponExist(Coupon coupon) throws SQLException, Exception 
+	public boolean isCouponExist(Coupon coupon) throws SQLException , NullPointerException
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
@@ -224,17 +237,15 @@ public class CouponDBDAO implements CouponDAO
 			tempRs = tempStatement.executeQuery(String.format(CouponSqlQueries.SELECT_ALL_WHERE_COUPON_TITLE,coupon.getTitle()));
 			if(tempRs.next())
 			{
+				pool.returnConnection(tempConn);	
 				return true;
 			}
 		}
-		catch (SQLException e) 
+		catch (Exception e)
 		{
-			// TODO: handle exception
+			return false;
 		}
-		finally 
-		{
-			pool.returnConnection(tempConn);	
-		}
+		pool.returnConnection(tempConn);	
 		return false;
 	}
 	//---------------------------------------------------------------------------------------------
@@ -243,7 +254,7 @@ public class CouponDBDAO implements CouponDAO
 	 * @param coupon coupon object instance 
 	 */
 	@Override
-	public void insertCouponToDatabase(Coupon coupon) throws SQLException, Exception 
+	public void insertCouponToDatabase(Coupon coupon) throws SQLException 
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -254,9 +265,10 @@ public class CouponDBDAO implements CouponDAO
 		tempPreparedStatement.setString(2, converter.dateToString(coupon.getStartDate()));
 		tempPreparedStatement.setString(3, converter.dateToString(coupon.getEndDate()));
 		tempPreparedStatement.setInt(4, coupon.getAmount());
-		tempPreparedStatement.setString(5, coupon.getMessage());
-		tempPreparedStatement.setDouble(6, coupon.getPrice());
-		tempPreparedStatement.setString(7, coupon.getImage());
+		tempPreparedStatement.setString(5, coupon.getType().toString());
+		tempPreparedStatement.setString(6, coupon.getMessage());
+		tempPreparedStatement.setDouble(7, coupon.getPrice());
+		tempPreparedStatement.setString(8, coupon.getImage());
 
 		// execute the preparedStatement
 		tempPreparedStatement.execute();
@@ -274,4 +286,59 @@ public class CouponDBDAO implements CouponDAO
 		System.out.println("coupon : " +coupon.getTitle() + " added successfully");
 
 	}
+	//---------------------------------------------------------------------------------------------
+	/**
+	 * getting all the coupons out of date
+	 * @return return collection<coupon> of the out dated coupons
+	 */
+	@Override
+	public Collection<Coupon> getCouponOutOfDate() throws ClassNotFoundException, InterruptedException, SQLException, ParseException, NullConnectionException 
+	{
+		Connection tempConn = pool.getConnection();
+
+		ArrayList<Coupon> tempCouponArray = new ArrayList<>();
+
+		Statement stmt = (Statement) tempConn.createStatement();
+		ResultSet rs;
+		// the mysql select statement for the correct coupon
+		rs = stmt.executeQuery(CouponSqlQueries.SELECT_COUPON_OUT_OF_DATE);
+		//adding the data from the mysql table to the correct members in the coupon instance
+
+		while ( rs.next() )
+		{
+			Coupon tempCoupon = new Coupon();
+			tempCoupon.setId(rs.getInt("id"));
+			tempCoupon.setTitle(rs.getString("title"));
+			//tempCoupon.setStartDate(converter.stringToDate(rs.getString("start_date")));
+			tempCoupon.setStartDate((rs.getDate("start_date")));
+			tempCoupon.setEndDate(rs.getDate("end_date"));
+			tempCoupon.setAmount(rs.getInt("amount"));
+			tempCoupon.setType(CouponType.valueOf(rs.getString("TYPE").trim()));
+			tempCoupon.setMessage(rs.getString("message"));
+			tempCoupon.setPrice(rs.getDouble("price"));
+			tempCoupon.setImage(rs.getString("image"));
+
+			tempCouponArray.add(tempCoupon);
+		}
+		//returning the connection
+		pool.returnConnection(tempConn);
+
+		/*for(Coupon c : tempCouponArray)
+		{
+			System.out.println(c.getId());
+		}
+		 */
+
+		Iterator<Coupon> iter = tempCouponArray.iterator();
+		while (iter.hasNext()) 
+		{
+			Coupon c = iter.next();
+			System.out.println(c.getId());
+		}	
+
+		System.out.println(tempCouponArray.size());
+		return tempCouponArray;
+	}
+
+
 }

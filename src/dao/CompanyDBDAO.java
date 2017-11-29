@@ -1,7 +1,7 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.Date;
+import java.util.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -45,13 +45,14 @@ public class CompanyDBDAO implements CompanyDAO
 	/**
 	 * getting as a parameter company and adding it to the database if not exist
 	 * @param company instance object of a company 
+	 * @throws ParseException 
 	 */
 	@Override
-	public void createCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, DuplicateEntryException, NullConnectionException , Exception
+	public void createCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, DuplicateEntryException, NullConnectionException, ParseException
 	{
 		if(isCompanyNameExist(company))
 		{
-			System.out.println("company is exist in the database");
+			throw new DuplicateEntryException("the admin tried to creat a company with a name that already exist in the datbase");
 		}
 		else
 		{
@@ -62,87 +63,80 @@ public class CompanyDBDAO implements CompanyDAO
 	/**
 	 * getting as a parameter company and removing it from the database if exist
 	 * @param company instance object of a company
+	 * @throws ClassNotFoundException
+	 * @throws InterruptedException
+	 * @throws SQLException
+	 * @throws NullConnectionException
+	 * @throws ParseException 
 	 */
 	@Override
-	public void removeCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
+	public void removeCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
 	{
 		Connection tempConn = pool.getConnection();
 
-		try 
+		if(isCompanyIdExist(company))
 		{
-			if(isCompanyIdExist(company))
+			//deleting the company from company table
+			Statement  tempDeleteStatement = tempConn.createStatement();
+			tempDeleteStatement.execute(String.format(CompanySqlQueries.DELETE_FROM_COMPANY_WHERE_ID,company.getId()));
+
+			//getting all the coupons that company used
+			Statement tempCouponsStatement = tempConn.createStatement();
+			ResultSet tempCouponsResultSet;
+			tempCouponsResultSet = tempCouponsStatement.executeQuery(String.format(CompanyCouponSqlQueries.COUPON_ID_BY_COMP_ID, company.getId()));
+
+			while(tempCouponsResultSet.next())
 			{
-				//deleting the company from company table
-				Statement  tempDeleteStatement = tempConn.createStatement();
-				tempDeleteStatement.execute(String.format(CompanySqlQueries.DELETE_FROM_COMPANY_WHERE_ID,company.getId()));
+				int id = tempCouponsResultSet.getInt("coupon_id");
+				Statement tempDeleteStatement2 = tempConn.createStatement();
 
-				//getting all the coupons that company used
-				Statement tempCouponsStatement = tempConn.createStatement();
-				ResultSet tempCouponsResultSet;
-				tempCouponsResultSet = tempCouponsStatement.executeQuery(String.format(CompanyCouponSqlQueries.COUPON_ID_BY_COMP_ID, company.getId()));
-
-				while(tempCouponsResultSet.next())
-				{
-					int id = tempCouponsResultSet.getInt("coupon_id");
-					Statement tempDeleteStatement2 = tempConn.createStatement();
-
-					//delete coupon from coupon table 
-					tempDeleteStatement2.execute(String.format(CouponSqlQueries.DELETE_COUPON_BY_ID, id));
-					//delete coupon from coupon_customer table 
-					tempDeleteStatement2.execute(String.format(CustomerCouponSqlQueries.DELETE_COUPON_CUST_ID, id));
-					//delete coupon from coupon_company table 
-					tempDeleteStatement2.execute(String.format(CompanyCouponSqlQueries.DELETE_COUPON_COMP_ID, company.getId()));
-				}
-				System.out.println("company : " + company.getCompName() + " removerd successfull");		    		
+				//delete coupon from coupon table 
+				tempDeleteStatement2.execute(String.format(CouponSqlQueries.DELETE_COUPON_BY_ID, id));
+				//delete coupon from coupon_customer table 
+				tempDeleteStatement2.execute(String.format(CustomerCouponSqlQueries.DELETE_COUPON_CUST_ID, id));
+				//delete coupon from coupon_company table 
+				tempDeleteStatement2.execute(String.format(CompanyCouponSqlQueries.DELETE_COUPON_COMP_ID, company.getId()));
 			}
-			else
-			{
-				System.out.println("compnay : " + company.getCompName() + " not exist in the database");
-			}
-		} 
-		catch (Exception e) 
-		{
-			// TODO: handle exception
+			System.out.println("company : " + company.getCompName() + " removerd successfull");		    		
 		}
-		finally
+		else
 		{
-			pool.returnConnection(tempConn);
+			System.out.println("compnay : " + company.getCompName() + " not exist in the database");
 		}
+		pool.returnConnection(tempConn);
+
 
 	}
 	//-------------------------------------------------------------------------------------------------------
 	/**
 	 * getting as a parameter company and updating it in the database if exist
 	 * @param company instance object of a company
+	 * @throws ClassNotFoundException
+	 * @throws InterruptedException
+	 * @throws SQLException
+	 * @throws NullConnectionException
+	 * @throws ParseException
 	 */
 	@Override
-	public void updateCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
+	public void updateCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException 
 	{
 		Connection tempConn = pool.getConnection();
-		try
+
+		if(isCompanyIdExist(company))
 		{
-			if(isCompanyIdExist(company))
-			{
-				PreparedStatement tempPreparedStatement =tempConn.prepareStatement(CompanySqlQueries.UPDATE_COMPANY_BY_ID);
-				tempPreparedStatement.setString   (1, company.getPassword());
-				tempPreparedStatement.setString   (2, company.getEmail());
-				tempPreparedStatement.setLong     (3, company.getId());
-				tempPreparedStatement.execute();
-				System.out.println("company " + company.getCompName() + " updated successfully");
-			}
-			else
-			{
-				System.out.println("company " + company.getCompName() + " not exist in the database");
-			}
+			PreparedStatement tempPreparedStatement =tempConn.prepareStatement(CompanySqlQueries.UPDATE_COMPANY_BY_ID);
+			tempPreparedStatement.setString   (1, company.getPassword());
+			tempPreparedStatement.setString   (2, company.getEmail());
+			tempPreparedStatement.setInt     (3, company.getId());
+			tempPreparedStatement.execute();
+			System.out.println("company " + company.getCompName() + " updated successfully");
 		}
-		catch (Exception e)
+		else
 		{
-			// TODO: handle exception
+			System.out.println("company " + company.getCompName() + " not exist in the database");
 		}
-		finally
-		{
-			pool.returnConnection(tempConn);			
-		}
+		pool.returnConnection(tempConn);			
+
 	}
 	//-------------------------------------------------------------------------------------------------------
 	/**
@@ -187,7 +181,6 @@ public class CompanyDBDAO implements CompanyDAO
 	@Override
 	public Collection<Company> getAllCompanies() throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException 
 	{
-		// TODO Auto-generated method stub
 		ArrayList<Company> tempCompanyArray = new ArrayList<>();
 
 		Connection tempConn = pool.getConnection();
@@ -227,26 +220,15 @@ public class CompanyDBDAO implements CompanyDAO
 		Connection tempConn = pool.getConnection();
 		ResultSet  tempRs;
 
-		try 
+		Statement  tempStatement = tempConn.createStatement();
+		tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ID_PASSWORD, compName,password));
+		if(tempRs.next())
 		{
-			Statement  tempStatement = tempConn.createStatement();
-			tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ID_PASSWORD, compName,password));
-			if(tempRs.next())
-			{
-				setCompanyId(tempRs.getInt("ID"));
-				return true;
-			}
+			setCompanyId(tempRs.getInt("ID"));
+			return true;
+		}
+		pool.returnConnection(tempConn);
 
-		}
-		catch (SQLException e) 
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally
-		{
-			pool.returnConnection(tempConn);	
-		}
 		return false;
 	}
 	//-------------------------------------------------------------------------------------------------------
@@ -266,42 +248,35 @@ public class CompanyDBDAO implements CompanyDAO
 		ResultSet  tempResultSet;
 
 		tempResultSet = tempStatement.executeQuery(String.format(CompanyCouponSqlQueries.COUPON_ID_BY_COMP_ID, id));
-		try
+
+		while (tempResultSet.next())
 		{
-			while (tempResultSet.next())
+			Statement  tempStatement2 = tempConn.createStatement();
+			ResultSet  tempResultSet2;
+			tempResultSet2 = tempStatement2.executeQuery(String.format(CouponSqlQueries.COUPON_BY_ID, tempResultSet.getInt("COUPON_ID")));
+
+			while (tempResultSet2.next())
 			{
-				Statement  tempStatement2 = tempConn.createStatement();
-				ResultSet  tempResultSet2;
-				tempResultSet2 = tempStatement2.executeQuery(String.format(CouponSqlQueries.COUPON_BY_ID, tempResultSet.getInt("COUPON_ID")));
+				Coupon tempCoupon = new Coupon();
+				tempCoupon.setId(tempResultSet2.getInt("ID"));
+				tempCoupon.setTitle(tempResultSet2.getString("TITLE"));
 
-				while (tempResultSet2.next())
-				{
-					Coupon tempCoupon = new Coupon();
-					tempCoupon.setId(tempResultSet2.getInt("ID"));
-					tempCoupon.setTitle(tempResultSet2.getString("TITLE"));
+				// getting dates and converting them using converter class to format yy-MM-dd 
+				tempCoupon.setStartDate(converter.stringToDate(tempResultSet2.getString("START_DATE")));
+				tempCoupon.setEndDate(converter.stringToDate(tempResultSet2.getString("END_DATE")));
+				tempCoupon.setAmount(tempResultSet2.getInt("AMOUNT"));
+				tempCoupon.setType(CouponType.valueOf(tempResultSet2.getString("TYPE").trim()));
+				tempCoupon.setMessage(tempResultSet2.getString("MESSAGE"));
+				tempCoupon.setPrice(tempResultSet2.getDouble("PRICE"));
+				tempCoupon.setImage(tempResultSet2.getString("IMAGE"));
 
-					// getting dates and converting them using converter class to format yy-MM-dd 
-					tempCoupon.setStartDate(converter.stringToDate(tempResultSet2.getString("START_DATE")));
-					tempCoupon.setEndDate(converter.stringToDate(tempResultSet2.getString("END_DATE")));
-					tempCoupon.setAmount(tempResultSet2.getInt("AMOUNT"));
-					tempCoupon.setType(CouponType.valueOf(tempResultSet2.getString("TYPE").trim()));
-					tempCoupon.setMessage(tempResultSet2.getString("MESSAGE"));
-					tempCoupon.setPrice(tempResultSet2.getDouble("PRICE"));
-					tempCoupon.setImage(tempResultSet2.getString("IMAGE"));
-
-					tempCouponsArray.add(tempCoupon);
-				}
+				tempCouponsArray.add(tempCoupon);
 			}
 		}
-		catch (Exception e)
-		{
-			// TODO: handle exception
-		}
-		finally 
-		{
-			//returning the connection to the pool
-			pool.returnConnection(tempConn);
-		}
+
+		//returning the connection to the pool
+		pool.returnConnection(tempConn);
+
 		return tempCouponsArray;
 	}
 	//-------------------------------------------------------------------------------------------------------
@@ -316,19 +291,14 @@ public class CompanyDBDAO implements CompanyDAO
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		try
+
+		tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ALL_WHERE_COMP_NAME,company.getCompName()));
+		if(tempRs.next())
 		{
-			tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ALL_WHERE_COMP_NAME,company.getCompName()));
-			if(tempRs.next())
-			{
-				pool.returnConnection(tempConn);
-				return true;
-			}
+			pool.returnConnection(tempConn);
+			return true;
 		}
-		catch (SQLException e) 
-		{
-			// TODO: handle exception
-		}
+
 		pool.returnConnection(tempConn);
 		return false;
 	}
@@ -344,19 +314,14 @@ public class CompanyDBDAO implements CompanyDAO
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		try
+
+		tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ALL_WHERE_COMP_ID,company.getId()));
+		if(tempRs.next())
 		{
-			tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ALL_WHERE_COMP_ID,company.getId()));
-			if(tempRs.next())
-			{
-				pool.returnConnection(tempConn);
-				return true;
-			}
+			pool.returnConnection(tempConn);
+			return true;
 		}
-		catch (SQLException e) 
-		{
-			// TODO: handle exception
-		}
+
 		pool.returnConnection(tempConn);
 		return false;
 	}
@@ -370,22 +335,20 @@ public class CompanyDBDAO implements CompanyDAO
 	{
 		Connection tempConn = pool.getConnection();
 
-		try
-		{
-			//creating the preparedStatement
-			PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CompanySqlQueries.INSERT_COMPANY);
+		//creating the preparedStatement
+		PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CompanySqlQueries.INSERT_COMPANY);
 
-			tempPreparedStatement.setString(1, company.getCompName());
-			tempPreparedStatement.setString(2, company.getPassword());
-			tempPreparedStatement.setString(3, company.getEmail());
+		//System.out.println(company.getCompName());
+		//System.out.println(company.getPassword());
+		//System.out.println(company.getEmail());
 
-			// execute the preparedStatement
-			tempPreparedStatement.execute();
-		}
-		catch (SQLException e)
-		{
-			// TODO: handle exception
-		}
+
+		tempPreparedStatement.setString(1, company.getCompName());
+		tempPreparedStatement.setString(2, company.getPassword());
+		tempPreparedStatement.setString(3, company.getEmail());
+
+		tempPreparedStatement.execute();
+
 		System.out.println("company : " +company.getCompName() + " added successfully");
 		pool.returnConnection(tempConn);
 	}
@@ -481,7 +444,7 @@ public class CompanyDBDAO implements CompanyDAO
 		ResultSet  tempRs;
 
 		// getting all the COUPON_ID for the company with date before date parameter
-		tempRs = tempStatement.executeQuery(String.format(CompanyCouponSqlQueries.SELECT_COUPON_COMPANY_BY_DATE,companyId,date));
+		tempRs = tempStatement.executeQuery(String.format(CompanyCouponSqlQueries.SELECT_COUPON_COMPANY_BY_DATE,companyId,converter.dateToString(date)));
 
 
 		while ( tempRs.next() )
@@ -509,21 +472,36 @@ public class CompanyDBDAO implements CompanyDAO
 	 * connecting a coupon to a company 
 	 * @param companyId id of the company
 	 * @param couponId  id of the coupon
+	 * @throws DuplicateEntryException 
 	 */
 	@Override
-	public void addCouponToCompany(int companyId, int couponId)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
+	public void addCouponToCompany(int companyId, int couponId)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException, DuplicateEntryException
 	{
 		Connection tempConn = pool.getConnection();
 
-		//creating the preparedStatement
-		PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CompanyCouponSqlQueries.INSERT_COUPON_TO_COMPANY);
+		//check if coupon exist in company_coupon table
+		//COMP_ID_BY_COUPON_ID
+		Statement stmt = (Statement) tempConn.createStatement();
+		ResultSet rs;
+		// the mysql select statement for the correct coupon
+		rs = stmt.executeQuery(String.format(CompanyCouponSqlQueries.SELECT_ALL_WHERE_COUPON_ID_COMP_ID, couponId , companyId));
 
-		tempPreparedStatement.setInt(1, companyId);
-		tempPreparedStatement.setInt(2, couponId);
+		if(!rs.next())
+		{
+			//creating the preparedStatement
+			PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CompanyCouponSqlQueries.INSERT_COUPON_TO_COMPANY);
 
-		// execute the preparedStatement
-		tempPreparedStatement.execute();
+			tempPreparedStatement.setInt(1, companyId);
+			tempPreparedStatement.setInt(2, couponId);
 
+			// execute the preparedStatement
+			tempPreparedStatement.execute();
+		}
+		else
+		{
+			throw new DuplicateEntryException("coupon exist for this company");
+			//System.out.println("coupon exist for this company");
+		}
 		pool.returnConnection(tempConn);
 	}
 	//-----------------------------------------------------------------------------------------------------------

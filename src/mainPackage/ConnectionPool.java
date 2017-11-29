@@ -7,8 +7,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import exceptionsHandlers.GeneralExceptionHandler;
 import utilities.Configurations_values;
 
+/**
+ * 
+ * A singleton class that holds all of the connections to the database and distributes them to the asking methods.
+ *
+ */
 public class ConnectionPool 
 {
 	//---------------------------------static instance variable..using because of the singleton design pattern---------------
@@ -19,6 +25,10 @@ public class ConnectionPool
 	private boolean isSystemShuttingDown = false;
 
 	//-------------------------------------------------getInstance method-----------------------------------------------------
+	/**
+	 * 
+	 * @return return instance of the ConnectionPool 
+	 */
 	public  static synchronized ConnectionPool getInstance() 
 	{
 		if(INSTANCE == null)
@@ -28,6 +38,9 @@ public class ConnectionPool
 		return INSTANCE;
 	}
 
+	/**
+	 * the constructor of the connection pool
+	 */
 	private ConnectionPool() 
 	{
 		try 
@@ -36,8 +49,7 @@ public class ConnectionPool
 		} 
 		catch (ClassNotFoundException e) 
 		{
-			// TODO: handle exception
-			System.out.println("ClassNotFoundException");
+			GeneralExceptionHandler.handle(e);
 		}
 
 		myConnections = new HashSet<>(Configurations_values.MAX_CONNECTIONS);
@@ -49,14 +61,17 @@ public class ConnectionPool
 			}
 			catch (SQLException e) 
 			{
-				// TODO: handle exception
-				System.out.println("SQLException");
-
+				GeneralExceptionHandler.handle(e);
 			}
 		}
 	}
 
 	//-------------------------------------------------getConnection method-----------------------------------------------------
+	/**
+	 * getConnection method giving connection for the asking methods and threads 
+	 * its a synchronized method so if there is no connections free , it will hold the ask until one is free
+	 * @return returns a connection 
+	 */
 	public synchronized Connection getConnection()  
 	{
 		Connection tempConn = null;
@@ -70,8 +85,7 @@ public class ConnectionPool
 				}
 				catch (InterruptedException e) 
 				{
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					GeneralExceptionHandler.handle(e);
 				}
 			}
 
@@ -93,6 +107,13 @@ public class ConnectionPool
 	}
 
 	//-------------------------------------------------returnConnection method-------------------------------------------------
+	/**
+	 * returnConnection method receives a connection from a method/thread that don't need it<br/>
+	 * any more and adds it to the Set.<br/>
+	 * once the connection has been added, the method give a notify notice to any method/thread<br/>
+	 * that are in a wait status.
+	 * @param conn a connection that is being returned to the connection pool
+	 */
 	public void returnConnection(Connection conn)
 	{
 		myConnections.add(conn);
@@ -103,6 +124,11 @@ public class ConnectionPool
 	}
 
 	//-------------------------------------------------closeAllConnections method---------------------------------------------
+	/**
+	 *  cloasAllConnectios method runs on all the connections in the Set and closes them<br/>
+	 *  one by one
+	 * @throws SQLException thrown when the connection to the sql is not vaiable
+	 */
 	public synchronized void closeAllConnections() throws SQLException 
 	{
 		isSystemShuttingDown=true;
@@ -130,5 +156,14 @@ public class ConnectionPool
 			tempConn.close();
 			//myConnections.remove(tempConn);
 		}
+	}
+
+	/**
+	 * changes a boolean param to true and thus stops the method getConnection from giving<br/>
+	 * connections.
+	 */
+	public void shuttingDown()
+	{
+		isSystemShuttingDown = true;
 	}
 }

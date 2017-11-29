@@ -13,6 +13,7 @@ public enum ExceptionType
 	DuplicateEntryException,
 	WrongDataInputException,
 	NullConnectionException,
+	NullPointerException,
 	ParseException,
 	DuplicateCouponTypeException,
 	UnAvailableCouponException

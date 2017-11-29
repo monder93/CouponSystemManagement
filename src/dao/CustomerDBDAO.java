@@ -1,7 +1,13 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.Date;
+import java.util.Date;
+
+import exceptions.DuplicateEntryException;
+import exceptions.NullConnectionException;
+import exceptions.UnAvailableCouponException;
+import exceptions.WrongDataInputException;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,12 +48,11 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @param customer instance object of a customer 
 	 */
 	@Override
-	public void createCustomer(Customer customer) throws Exception 
+	public void createCustomer(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, DuplicateEntryException, NullConnectionException 
 	{
-		// TODO Auto-generated method stub
 		if(isCustomerExist(customer))
 		{
-			//Exception 
+			throw new DuplicateEntryException("the admin tried to create a customer with a name and password that already exist in the database");
 		}
 		else
 		{
@@ -60,13 +65,10 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @param customer instance object of a customer
 	 */
 	@Override
-	public void removeCustomer(Customer customer) throws SQLException 
+	public void removeCustomer(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
 	{
-		// TODO Auto-generated method stub
 		Connection tempConn = pool.getConnection();
-
-		try 
-		{
+ 		
 			if(isCustomerExist(customer))
 			{
 				Statement  tempDeleteStatement = tempConn.createStatement();
@@ -75,7 +77,7 @@ public class CustomerDBDAO implements CustomerDAO
 				tempDeleteStatement.execute(String.format(CustomerSqlQueries.DELET_BY_CUST_NAME,customer.getCustName()));
 
 				//deleting customer coupons that customer used -- from table customer_coupon
-				tempDeleteStatement.executeQuery(String.format(CustomerCouponSqlQueries.DELET_BY_CUST_ID, customer.getId()));
+				tempDeleteStatement.execute(String.format(CustomerCouponSqlQueries.DELET_BY_CUST_ID, customer.getId()));
 
 				System.out.println("customer  : " + customer.getCustName() + " removerd successfull");		    		
 			}
@@ -83,15 +85,9 @@ public class CustomerDBDAO implements CustomerDAO
 			{
 				System.out.println("customer : " + customer.getCustName() + " not exist in the database");
 			}
-		} 
-		catch (Exception e) 
-		{
-			// TODO: handle exception
-		}
-		finally
-		{
+		
 			pool.returnConnection(tempConn);
-		}
+		
 	}	
 	//-----------------------------------------------------------------------------------------------------
 	/**
@@ -99,13 +95,10 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @param customer instance object of a customer
 	 */
 	@Override
-	public void updateCustomer(Customer customer) throws SQLException
+	public void updateCustomer(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
-		// TODO Auto-generated method stub
 		Connection tempConn = pool.getConnection();
 
-		try 
-		{
 			if(isCustomerExist(customer))
 			{						
 				PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CustomerSqlQueries.UPDATE_CUSTOMER);
@@ -118,15 +111,9 @@ public class CustomerDBDAO implements CustomerDAO
 			{
 				System.out.println("customer : " + customer.getCustName() + " not exist in the database");
 			}
-		} 
-		catch (Exception e) 
-		{
-			// TODO: handle exception
-		}
-		finally
-		{
+		
 			pool.returnConnection(tempConn);
-		}
+		
 	}
 	//----------------------------------------------------------------------------------------------------------
 	/**
@@ -135,7 +122,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return returns a customer object 
 	 */
 	@Override
-	public Customer getCustomer(long id) throws SQLException 
+	public Customer getCustomer(long id) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
@@ -154,13 +141,13 @@ public class CustomerDBDAO implements CustomerDAO
 		}
 		else
 		{
-			System.out.println("there is no company with this id ");
+			System.out.println("there is no Customer with this id ");
 		}
 
 		//returning the connection 
 		pool.returnConnection(tempConn);
 
-		//returning the company object 
+		//returning the customer object 
 		return tempCustomer;
 	}
 	//----------------------------------------------------------------------------------------------------------
@@ -169,9 +156,8 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return a collection<Customer> with all the customers inside it 
 	 */
 	@Override
-	public Collection<Customer> getAllCustomer() throws SQLException 
+	public Collection<Customer> getAllCustomer() throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
 	{
-		// TODO Auto-generated method stub
 		ArrayList<Customer> tempCustomerArray = new ArrayList<>();
 
 		Connection tempConn = pool.getConnection();
@@ -193,7 +179,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return returning collection<Coupon> with all the coupons of this customer inside it 
 	 */
 	@Override
-	public Collection<Coupon> getCoupons() throws SQLException 
+	public Collection<Coupon> getCoupons() throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
 		ArrayList<Coupon> arrayOfCustomersCoupons = new ArrayList<Coupon>(this.getCouponsByCustomerId(getCustomerId()));
 		return arrayOfCustomersCoupons;
@@ -206,13 +192,11 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return returns true if custName and password is correct and they are in the database , else returns false
 	 */
 	@Override
-	public boolean login(String custName, String password) throws SQLException, Exception 
+	public boolean login(String custName, String password) throws ClassNotFoundException, InterruptedException, SQLException, WrongDataInputException, NullConnectionException 
 	{
 		Connection tempConn = pool.getConnection();
 		ResultSet  tempRs;
-
-		try 
-		{
+		
 			Statement  tempStatement = tempConn.createStatement();
 			tempRs = tempStatement.executeQuery(String.format(CustomerSqlQueries.SELECT_ID_PASSWORD, custName,password));
 			if(tempRs.next())
@@ -221,16 +205,9 @@ public class CustomerDBDAO implements CustomerDAO
 				return true;
 			}
 
-		}
-		catch (SQLException e) 
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		finally
-		{
+		
 			pool.returnConnection(tempConn);	
-		}
+		
 		return false;
 	}
 	//---------------------------------------------------------------------------------------------------------
@@ -240,28 +217,20 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return true if customer name is exist in the database , else return false
 	 */
 	@Override
-	public boolean isCustomerExist(Customer customer) throws SQLException, Exception 
+	public boolean isCustomerExist(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		try
-		{
+	
 			tempRs = tempStatement.executeQuery(String.format(CustomerSqlQueries.SELECT_ALL_WHERE_CUST_NAME,customer.getCustName()));
 			if(tempRs.next())
 			{
 				return true;
 			}
-		}
-		catch (SQLException e) 
-		{
-			// TODO: handle exception
-		}
-		finally 
-		{
+		
 			pool.returnConnection(tempConn);
 
-		}
 		return false;
 	}
 	//---------------------------------------------------------------------------------------------------
@@ -270,13 +239,10 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @param customer customer object instance 
 	 */
 	@Override
-	public void insertCustomerToDatabase(Customer customer) throws SQLException, Exception 
+	public void insertCustomerToDatabase(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
-		// TODO Auto-generated method stub
 		Connection tempConn = pool.getConnection();
 
-		try
-		{
 			//creating the preparedStatement
 			PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CustomerSqlQueries.INSERT_CUSTOMER);
 
@@ -285,16 +251,10 @@ public class CustomerDBDAO implements CustomerDAO
 
 			// execute the preparedStatement
 			tempPreparedStatement.execute();
-		}
-		catch (SQLException e)
-		{
-			// TODO: handle exception
-		}
-		finally
-		{
+		
 			pool.returnConnection(tempConn);	
-		}
-		System.out.println("company : " +customer.getCustName() + " added successfully");
+
+		System.out.println("Customer : " +customer.getCustName() + " added successfully");
 
 	}
 	//---------------------------------------------------------------------------------------------------------
@@ -304,7 +264,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return returning a collection<Coupon> inside it coupons of customer with the id in the parameter
 	 */
 	@Override
-	public Collection<Coupon> getCouponsByCustomerId(long id) throws SQLException 
+	public Collection<Coupon> getCouponsByCustomerId(long id) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
 	{
 		ArrayList<Coupon> tempCouponsArray = new ArrayList<>();
 
@@ -314,8 +274,7 @@ public class CustomerDBDAO implements CustomerDAO
 		ResultSet  tempResultSet;
 
 		tempResultSet = tempStatement.executeQuery(String.format(CustomerCouponSqlQueries.COUPON_ID_BY_CUST_ID, id));
-		try
-		{
+
 			while (tempResultSet.next())
 			{
 				Statement  tempStatement2 = tempConn.createStatement();
@@ -340,16 +299,10 @@ public class CustomerDBDAO implements CustomerDAO
 					tempCouponsArray.add(tempCoupon);
 				}
 			}
-		}
-		catch (Exception e)
-		{
-			// TODO: handle exception
-		}
-		finally 
-		{
+		
 			//returning the connection to the pool
 			pool.returnConnection(tempConn);
-		}
+		
 		return tempCouponsArray;
 	}
 	//-----------------------------------------------------------------------------------------------
@@ -359,7 +312,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return collection<Coupon> inside it the customer coupons by specific type
 	 */
 	@Override
-	public Collection<Coupon> getCouponsByType(CouponType couponType) throws SQLException
+	public Collection<Coupon> getCouponsByType(CouponType couponType) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 		ArrayList<Coupon> ArrayOfCouponsByType = new ArrayList<>();
@@ -397,7 +350,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return collection<Coupon> inside it the customer coupons by price limit
 	 */
 	@Override
-	public Collection<Coupon> getCouponsByPrice(double price) throws SQLException 
+	public Collection<Coupon> getCouponsByPrice(double price) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 		ArrayList<Coupon> ArrayOfCouponsByPrice = new ArrayList<>();
@@ -435,7 +388,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @param couponId  id of the coupon
 	 */
 	@Override
-	public void addCouponToCustomer(int customerId, int couponId) throws SQLException, Exception
+	public void addCouponToCustomer(int customerId, int couponId) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
 	{
 		Connection tempConn = pool.getConnection();
 
@@ -474,7 +427,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @param coupon
 	 */
 	@Override
-	public void purchaseCoupon(Coupon coupon) throws SQLException, Exception 
+	public void purchaseCoupon(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException
 	{
 		Connection tempConn = pool.getConnection();
 		
@@ -494,6 +447,12 @@ public class CustomerDBDAO implements CustomerDAO
 			addCouponToCustomer(getCustomerId() , coupon.getId());
 			
 			pool.returnConnection(tempConn);
+			System.out.println("customer purchased coupon : " +coupon );
+		}
+		else
+		{
+			pool.returnConnection(tempConn);
+			throw new UnAvailableCouponException("customer tried to purchse a coupon that is either out of date , purchased in the past , or it's available amount is 0");
 		}
 	}
 	//-----------------------------------------------------------------------------------------------
@@ -503,7 +462,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return true if amount > 0 else false
 	 */
 	@Override
-	public boolean isValidAmount(Coupon coupon) throws SQLException, Exception 
+	public boolean isValidAmount(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException
 	{
 		Connection tempConn = pool.getConnection();
 		int tempAmount = 0;
@@ -514,7 +473,7 @@ public class CustomerDBDAO implements CustomerDAO
 		{
 			tempAmount = tempRs.getInt("amount");
 		}
-		
+		System.out.println("amount is :" + tempAmount);
 		if(tempAmount>0)
 			{
 			pool.returnConnection(tempConn);
@@ -530,7 +489,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return true if today is before , else false
 	 */
 	@Override
-	public boolean isValidDate(Coupon coupon) throws SQLException, Exception 
+	public boolean isValidDate(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException 
 	{
 		Connection tempConn = pool.getConnection();
 		Date todayDate = (Date) Calendar.getInstance().getTime();
@@ -540,9 +499,11 @@ public class CustomerDBDAO implements CustomerDAO
 		tempRs = tempStatement.executeQuery(String.format(CouponSqlQueries.SELECT_ALL_WHERE_COUPON_TITLE, coupon.getTitle()));
 		if(tempRs.next())
 		{
-			endDate = converter.stringToDate(tempRs.getString("END_DATE"));
+			endDate = tempRs.getDate("END_DATE");
 		}
-		
+		System.out.println("todayDate : " + todayDate);
+		System.out.println("endDate : " + endDate);
+		System.out.println(todayDate.before(endDate));
 		if(todayDate.before(endDate))
 			{
 			pool.returnConnection(tempConn);
@@ -558,12 +519,12 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return return true if this is the first time customer wants to buy , else false
 	 */
 	@Override
-	public boolean isFirstBuy(Coupon coupon) throws SQLException, Exception 
+	public boolean isFirstBuy(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException 
 	{
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		tempRs = tempStatement.executeQuery(String.format(CustomerCouponSqlQueries.SELECT_ALL_BY_COUPON_ID, coupon.getTitle()));
+		tempRs = tempStatement.executeQuery(String.format(CustomerCouponSqlQueries.SELECT_ALL_BY_COUPON_ID, coupon.getId()));
 		if(tempRs.next())
 		{
 			pool.returnConnection(tempConn);

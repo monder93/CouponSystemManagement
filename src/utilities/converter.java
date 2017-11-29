@@ -1,6 +1,9 @@
 package utilities;
 
-import java.sql.Date;
+import java.util.Date;
+
+import exceptionsHandlers.GeneralExceptionHandler;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
@@ -9,7 +12,7 @@ public class converter
 	
 	// this class have 2 static functions to convert between Date && String 
 	
-	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-MM-dd");
+	private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yy-mm-dd");
 	
 	//--------------------------------------------------------------------------------------------------------
 	public static String dateToString(Date date)
@@ -25,12 +28,11 @@ public class converter
 		Date tempDate=null;
 		try
 		{
-			tempDate = (Date) simpleDateFormat.parse(date);
+			tempDate = simpleDateFormat.parse(date);
 		}
 		catch (ParseException e) 
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			GeneralExceptionHandler.handle(e);
 		}
 		return tempDate;
 	}
