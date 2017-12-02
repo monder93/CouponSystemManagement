@@ -262,8 +262,12 @@ public class CompanyDBDAO implements CompanyDAO
 				tempCoupon.setTitle(tempResultSet2.getString("TITLE"));
 
 				// getting dates and converting them using converter class to format yy-MM-dd 
-				tempCoupon.setStartDate(converter.stringToDate(tempResultSet2.getString("START_DATE")));
-				tempCoupon.setEndDate(converter.stringToDate(tempResultSet2.getString("END_DATE")));
+//				tempCoupon.setStartDate(converter.stringToDate(tempResultSet2.getString("START_DATE")));
+//				tempCoupon.setEndDate(converter.stringToDate(tempResultSet2.getString("END_DATE")));
+				
+				tempCoupon.setStartDate(tempResultSet2.getDate("START_DATE"));
+				tempCoupon.setEndDate(tempResultSet2.getDate("END_DATE"));
+				
 				tempCoupon.setAmount(tempResultSet2.getInt("AMOUNT"));
 				tempCoupon.setType(CouponType.valueOf(tempResultSet2.getString("TYPE").trim()));
 				tempCoupon.setMessage(tempResultSet2.getString("MESSAGE"));

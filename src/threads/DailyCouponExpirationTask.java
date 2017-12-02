@@ -30,6 +30,7 @@ public class DailyCouponExpirationTask implements Runnable
 	@Override
 	public void run() 
 	{
+		System.out.println("thread started");
 
 		while(!exit)
 		{

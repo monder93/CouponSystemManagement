@@ -8,8 +8,6 @@ import java.sql.Statement;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
-
 import exceptions.DuplicateEntryException;
 import exceptions.NullConnectionException;
 import exceptions.UnAvailableCouponException;
@@ -67,7 +65,6 @@ public class CouponDBDAO implements CouponDAO
 		Connection tempConn = pool.getConnection();
 		if(isCouponExist(coupon))
 		{
-			System.out.println("loggeddddd");
 			//deleting the coupon from coupon table
 			Statement  tempDeleteStatement = tempConn.createStatement();
 			tempDeleteStatement.execute(String.format(CouponSqlQueries.DELETE_COUPON_BY_ID,coupon.getId()));
@@ -87,7 +84,6 @@ public class CouponDBDAO implements CouponDAO
 			pool.returnConnection(tempConn);
 			throw new UnAvailableCouponException("coupon not exist - cant remove");
 		}
-		System.out.println("out");
 
 	}
 	//-----------------------------------------------------------------------------------------------------
@@ -322,21 +318,17 @@ public class CouponDBDAO implements CouponDAO
 		}
 		//returning the connection
 		pool.returnConnection(tempConn);
-
-		/*for(Coupon c : tempCouponArray)
-		{
-			System.out.println(c.getId());
-		}
-		 */
-
+/*
+		System.out.println("out of dated coupons:");
 		Iterator<Coupon> iter = tempCouponArray.iterator();
 		while (iter.hasNext()) 
 		{
 			Coupon c = iter.next();
-			System.out.println(c.getId());
+			System.out.println("coupon id: "+c.getId());
 		}	
 
-		System.out.println(tempCouponArray.size());
+		System.out.println("out of dated coupons number:  "+tempCouponArray.size());
+*/
 		return tempCouponArray;
 	}
 

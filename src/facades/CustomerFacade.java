@@ -49,28 +49,31 @@ public class CustomerFacade implements CouponClientFacade
 	/**
 	 * getting all the purchased coupons for the current customer
 	 * @return an ArrayList of all the current customer's purchased coupons
+	 * @throws  
 	 */
-	public Collection<Coupon> getAllPurchasedCoupons() throws SQLException
+	public Collection<Coupon> getAllPurchasedCoupons() 
 	{
-		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
-		try 
-		{
-			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCoupons();
-		} 
-		catch (ClassNotFoundException | InterruptedException | NullConnectionException e)
-		{
-			CustomerExceptionHandler.handle(e);
-		}
+			ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
-		return allCustomerCoupons;
+			try 
+			{
+				allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCoupons();
+			} 
+			catch (NullPointerException| ClassNotFoundException | InterruptedException | NullConnectionException | SQLException e)
+			{
+				CustomerExceptionHandler.handle(e);
+			}
+
+			return allCustomerCoupons;
+
 	}
 	//----------------------------------------------------------------------------------------
 	/**
 	 * getting all the purchased coupons for the current customer by type
 	 * @return an ArrayList of all the current customer's purchased coupons by type
 	 */
-	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType coupontype) throws SQLException
+	public Collection<Coupon> getAllPurchasedCouponsByType(CouponType coupontype) 
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
@@ -78,7 +81,7 @@ public class CustomerFacade implements CouponClientFacade
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCouponsByType(coupontype);
 		} 
-		catch (ClassNotFoundException | InterruptedException | NullConnectionException e)
+		catch (ClassNotFoundException | InterruptedException | NullConnectionException | SQLException e)
 		{
 			CustomerExceptionHandler.handle(e);
 		}
@@ -90,7 +93,7 @@ public class CustomerFacade implements CouponClientFacade
 	 * getting all the purchased coupons for the current customer by price
 	 * @return an ArrayList of all the current customer's purchased coupons by price
 	 */
-	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price) throws SQLException
+	public Collection<Coupon> getAllPurchasedCouponsByPrice(double price) 
 	{
 		ArrayList<Coupon> allCustomerCoupons = new ArrayList<>();
 
@@ -98,7 +101,7 @@ public class CustomerFacade implements CouponClientFacade
 		{
 			allCustomerCoupons = (ArrayList<Coupon>) customerdbdao.getCouponsByPrice(price);
 		}
-		catch (ClassNotFoundException | InterruptedException | NullConnectionException e) 
+		catch (ClassNotFoundException | InterruptedException | NullConnectionException | SQLException e) 
 		{
 			CustomerExceptionHandler.handle(e);
 		}
@@ -123,9 +126,9 @@ public class CustomerFacade implements CouponClientFacade
 			}
 		}
 		catch (ClassNotFoundException | InterruptedException | SQLException | WrongDataInputException
-				| NullConnectionException e) 
+				| NullConnectionException | NullPointerException e) 
 		{
-			CustomerExceptionHandler.handle(e);
+			GeneralExceptionHandler.handle(e);
 		}
 
 		return null;

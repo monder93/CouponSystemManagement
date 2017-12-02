@@ -15,8 +15,8 @@ public class Configurations_values
 	public static final String url = "jdbc:mysql://localhost:3306/johnbryceproject?useSSL=false";
 	public static final String username = "root";
 	public static final String password = "12345";
-	public static final int sleepTime = 86400000;
-//	public static final int sleepTime = 10000;
+	//public static final int sleepTime = 86400000;
+	public static final int sleepTime = 100;
 
 	public static final int waitTime = 5000;
 

@@ -98,7 +98,7 @@ public class ConnectionPool
 
 		if (tempConn == null)
 		{
-			throw new NullPointerException();
+			throw new NullPointerException("connections are closed");
 		}
 		else
 		{
@@ -165,5 +165,10 @@ public class ConnectionPool
 	public void shuttingDown()
 	{
 		isSystemShuttingDown = true;
+	}
+	
+	public int myConnectionsLength()
+	{
+		return myConnections.size();
 	}
 }

@@ -162,6 +162,6 @@ public class Company
 	public String toString() 
 	{
 		return "Company [id=" + id + ", compName=" + compName + ", password=" + password + ", email=" + email
-				+ ", coupons=" + coupons + "]\n";
+				+ ", coupons=\n" + coupons + "]\n";
 	}
 }

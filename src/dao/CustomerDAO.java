@@ -81,7 +81,7 @@ public interface CustomerDAO
 	 * @throws ParseException thrown when the date is not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public Collection<Coupon>  getCoupons() throws SQLException, ClassNotFoundException, InterruptedException, NullConnectionException;;
+	public Collection<Coupon>  getCoupons() throws SQLException, ClassNotFoundException, InterruptedException, NullConnectionException, NullPointerException;
 
 	/**
 	 * checks the database for a customer with the given name and the given password
@@ -129,7 +129,7 @@ public interface CustomerDAO
 	 * @throws ParseException thrown when the date is not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public Collection<Coupon> getCouponsByCustomerId(long id) throws SQLException, ClassNotFoundException, InterruptedException, NullConnectionException;
+	public Collection<Coupon> getCouponsByCustomerId(long id) throws SQLException, ClassNotFoundException, InterruptedException, NullConnectionException, NullPointerException;
 
 	/**
 	 * returns an ArrayList of all the coupons purchased by the current customer from the database by type

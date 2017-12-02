@@ -4,10 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class TestFunctions 
+public class clearDataBase 
 {
-	
-	public static void clearDateBase()
 	{
 		Connection conn = ConnectionPool.getInstance().getConnection();
 		try
@@ -23,9 +21,6 @@ public class TestFunctions
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		
-		
+		}	
 	}
-
 }

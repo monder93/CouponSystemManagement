@@ -179,7 +179,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return returning collection<Coupon> with all the coupons of this customer inside it 
 	 */
 	@Override
-	public Collection<Coupon> getCoupons() throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException
+	public Collection<Coupon> getCoupons() throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException , NullPointerException
 	{
 		ArrayList<Coupon> arrayOfCustomersCoupons = new ArrayList<Coupon>(this.getCouponsByCustomerId(getCustomerId()));
 		return arrayOfCustomersCoupons;
@@ -264,7 +264,7 @@ public class CustomerDBDAO implements CustomerDAO
 	 * @return returning a collection<Coupon> inside it coupons of customer with the id in the parameter
 	 */
 	@Override
-	public Collection<Coupon> getCouponsByCustomerId(long id) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException 
+	public Collection<Coupon> getCouponsByCustomerId(long id) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException , NullPointerException
 	{
 		ArrayList<Coupon> tempCouponsArray = new ArrayList<>();
 
@@ -473,7 +473,7 @@ public class CustomerDBDAO implements CustomerDAO
 		{
 			tempAmount = tempRs.getInt("amount");
 		}
-		System.out.println("amount is :" + tempAmount);
+		//System.out.println("amount is :" + tempAmount);
 		if(tempAmount>0)
 			{
 			pool.returnConnection(tempConn);
@@ -501,9 +501,9 @@ public class CustomerDBDAO implements CustomerDAO
 		{
 			endDate = tempRs.getDate("END_DATE");
 		}
-		System.out.println("todayDate : " + todayDate);
-		System.out.println("endDate : " + endDate);
-		System.out.println(todayDate.before(endDate));
+		//System.out.println("todayDate : " + todayDate);
+		//System.out.println("endDate : " + endDate);
+		//System.out.println(todayDate.before(endDate));
 		if(todayDate.before(endDate))
 			{
 			pool.returnConnection(tempConn);
@@ -524,7 +524,7 @@ public class CustomerDBDAO implements CustomerDAO
 		Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
-		tempRs = tempStatement.executeQuery(String.format(CustomerCouponSqlQueries.SELECT_ALL_BY_COUPON_ID, coupon.getId()));
+		tempRs = tempStatement.executeQuery(String.format(CustomerCouponSqlQueries.SELECT_ALL_BY_COUPON_ID_CUST_ID, coupon.getId(),customerId));
 		if(tempRs.next())
 		{
 			pool.returnConnection(tempConn);

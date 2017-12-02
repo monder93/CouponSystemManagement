@@ -12,8 +12,8 @@ import exceptions.DuplicateEntryException;
 import exceptions.NullConnectionException;
 import exceptions.UnAvailableCouponException;
 import exceptions.WrongDataInputException;
-import exceptionsHandlers.CompanyExceptionHandler;
 import exceptionsHandlers.CouponExceptionHandler;
+import exceptionsHandlers.GeneralExceptionHandler;
 import javaBeans.ClientType;
 import javaBeans.Coupon;
 import javaBeans.CouponType;
@@ -215,9 +215,9 @@ public class CompanyFacade implements CouponClientFacade
 			}
 		}
 		catch (ClassNotFoundException | InterruptedException | SQLException | WrongDataInputException
-				| NullConnectionException e)
+				| NullConnectionException | NullPointerException e)
 		{
-			CompanyExceptionHandler.handle(e);
+			GeneralExceptionHandler.handle(e);
 		}
 
 		return null;
