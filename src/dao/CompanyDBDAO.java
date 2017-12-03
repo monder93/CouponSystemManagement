@@ -50,13 +50,16 @@ public class CompanyDBDAO implements CompanyDAO
 	@Override
 	public void createCompany(Company company) throws ClassNotFoundException, InterruptedException, SQLException, DuplicateEntryException, NullConnectionException, ParseException
 	{
-		if(isCompanyNameExist(company))
+		Connection tempConn = pool.getConnection();
+		if(isCompanyNameExist(company,tempConn))
 		{
+			pool.returnConnection(tempConn);
 			throw new DuplicateEntryException("the admin tried to creat a company with a name that already exist in the datbase");
 		}
 		else
 		{
-			insertCompanyToDatabase(company);
+			insertCompanyToDatabase(company,tempConn);
+			pool.returnConnection(tempConn);
 		}
 	}
 	//-------------------------------------------------------------------------------------------------------
@@ -74,7 +77,7 @@ public class CompanyDBDAO implements CompanyDAO
 	{
 		Connection tempConn = pool.getConnection();
 
-		if(isCompanyIdExist(company))
+		if(isCompanyIdExist(company,tempConn))
 		{
 			//deleting the company from company table
 			Statement  tempDeleteStatement = tempConn.createStatement();
@@ -122,7 +125,7 @@ public class CompanyDBDAO implements CompanyDAO
 	{
 		Connection tempConn = pool.getConnection();
 
-		if(isCompanyIdExist(company))
+		if(isCompanyIdExist(company,tempConn))
 		{
 			PreparedStatement tempPreparedStatement =tempConn.prepareStatement(CompanySqlQueries.UPDATE_COMPANY_BY_ID);
 			tempPreparedStatement.setString   (1, company.getPassword());
@@ -225,6 +228,7 @@ public class CompanyDBDAO implements CompanyDAO
 		if(tempRs.next())
 		{
 			setCompanyId(tempRs.getInt("ID"));
+			pool.returnConnection(tempConn);
 			return true;
 		}
 		pool.returnConnection(tempConn);
@@ -290,20 +294,20 @@ public class CompanyDBDAO implements CompanyDAO
 	 * @return return true if company name is exist in the database , else return false
 	 */
 	@Override
-	public boolean isCompanyNameExist(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
+	public boolean isCompanyNameExist(Company company,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
 	{
-		Connection tempConn = pool.getConnection();
+		//Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
 
 		tempRs = tempStatement.executeQuery(String.format(CompanySqlQueries.SELECT_ALL_WHERE_COMP_NAME,company.getCompName()));
 		if(tempRs.next())
 		{
-			pool.returnConnection(tempConn);
+			//pool.returnConnection(tempConn);
 			return true;
 		}
 
-		pool.returnConnection(tempConn);
+		//pool.returnConnection(tempConn);
 		return false;
 	}
 	//-------------------------------------------------------------------------------------------------------
@@ -313,9 +317,9 @@ public class CompanyDBDAO implements CompanyDAO
 	 * @return return true if company id is exist in the database , else return false
 	 */
 	@Override
-	public boolean isCompanyIdExist(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
+	public boolean isCompanyIdExist(Company company,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException
 	{
-		Connection tempConn = pool.getConnection();
+		//Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
 
@@ -335,9 +339,9 @@ public class CompanyDBDAO implements CompanyDAO
 	 * @param company company object instance 
 	 */
 	@Override
-	public void insertCompanyToDatabase(Company company)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException	
+	public void insertCompanyToDatabase(Company company,Connection tempConn)  throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException	
 	{
-		Connection tempConn = pool.getConnection();
+		//Connection tempConn = pool.getConnection();
 
 		//creating the preparedStatement
 		PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CompanySqlQueries.INSERT_COMPANY);
@@ -354,7 +358,7 @@ public class CompanyDBDAO implements CompanyDAO
 		tempPreparedStatement.execute();
 
 		System.out.println("company : " +company.getCompName() + " added successfully");
-		pool.returnConnection(tempConn);
+		//pool.returnConnection(tempConn);
 	}
 	//--------------------------------------------------------------------------------------------------------------
 	/**

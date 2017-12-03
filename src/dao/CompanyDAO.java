@@ -1,6 +1,7 @@
 package dao;
 
 import java.util.Date;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Collection;
@@ -120,7 +121,7 @@ public interface CompanyDAO
 	 * @throws ParseException thrown when the date's are not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public boolean isCompanyNameExist(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException;
+	public boolean isCompanyNameExist(Company company,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException;
 	
 	/**
 	 * checking if company id is exist in the database
@@ -131,7 +132,7 @@ public interface CompanyDAO
 	 * @throws ParseException thrown when the date's are not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public boolean isCompanyIdExist(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException;;
+	public boolean isCompanyIdExist(Company company,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException;;
 	
 	/**
 	 * inserting company to the database
@@ -142,7 +143,7 @@ public interface CompanyDAO
 	 * @throws ParseException thrown when the date's are not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public void insertCompanyToDatabase(Company company) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException;
+	public void insertCompanyToDatabase(Company company,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException, ParseException;
 	
 	/**
 	 * returns an ArrayList of all the coupons of the current company in the database by type

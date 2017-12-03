@@ -21,6 +21,7 @@ public class clearDataBase
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}	
+		}
+		ConnectionPool.getInstance().returnConnection(conn);
 	}
 }

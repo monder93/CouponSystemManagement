@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Collection;
@@ -98,7 +99,7 @@ public interface CouponDAO
 	 * @throws Exception
 	 * @return return true if coupon exist in the database , else false
 	 */
-	public boolean isCouponExist(Coupon coupon) throws SQLException,NullPointerException ;
+	public boolean isCouponExist(Coupon coupon,Connection tempConn) throws SQLException,NullPointerException ;
 	
 	/**
 	 * insert coupon to database
@@ -106,7 +107,7 @@ public interface CouponDAO
 	 * @throws SQLException SQL exception
 	 * @throws Exception
 	 */
-	public void insertCouponToDatabase(Coupon coupon) throws SQLException ;
+	public void insertCouponToDatabase(Coupon coupon,Connection tempConn) throws SQLException ;
 	
 	/**
 	 * returns an ArrayList of all the coupons in the database that out of date 

@@ -1,5 +1,6 @@
 package dao;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -107,7 +108,7 @@ public interface CustomerDAO
 	 * @throws WrongDataInputException thrown when the input does not match any customer in the database
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public boolean isCustomerExist(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException;
+	public boolean isCustomerExist(Customer customer,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException;
 	
 	/**
 	 * inserting customer to database 
@@ -118,7 +119,7 @@ public interface CustomerDAO
 	 * @throws DuplicateEntryException thrown when trying to register a customer that already exist
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public void insertCustomerToDatabase(Customer customer) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException;
+	public void insertCustomerToDatabase(Customer customer,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException;
 	
 	/**
 	 * returns an ArrayList of all the coupons purchased by the current customer from the database for specific customer by id 
@@ -181,7 +182,7 @@ public interface CustomerDAO
 	 * @throws ParseException thrown when the date is not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public boolean isValidAmount(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException;
+	public boolean isValidAmount(Coupon coupon,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException;
 	
 	
 	/**
@@ -192,7 +193,7 @@ public interface CustomerDAO
 	 * @throws ParseException thrown when the date is not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public boolean isValidDate(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException;
+	public boolean isValidDate(Coupon coupon,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException;
 
 	
 	/**
@@ -203,6 +204,6 @@ public interface CustomerDAO
 	 * @throws ParseException thrown when the date is not in the correct format
 	 * @throws NullConnectionException thrown when the connection is null
 	 */
-	public boolean isFirstBuy(Coupon coupon) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException;
+	public boolean isFirstBuy(Coupon coupon,Connection tempConn) throws ClassNotFoundException, InterruptedException, SQLException, NullConnectionException,UnAvailableCouponException;
 
 }

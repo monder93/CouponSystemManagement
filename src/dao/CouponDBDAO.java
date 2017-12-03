@@ -44,13 +44,16 @@ public class CouponDBDAO implements CouponDAO
 	@Override
 	public void createCoupon(Coupon coupon) throws SQLException, ClassNotFoundException, InterruptedException, DuplicateEntryException, NullConnectionException 
 	{
-		if(isCouponExist(coupon))
+		Connection tempConn = pool.getConnection();
+		if(isCouponExist(coupon,tempConn))
 		{
+			pool.returnConnection(tempConn);
 			throw new DuplicateEntryException("the user tried to create a coupon with a title that already exist in the database");
 		}
 		else
 		{
-			insertCouponToDatabase(coupon);
+			insertCouponToDatabase(coupon,tempConn);
+			pool.returnConnection(tempConn);
 			//setting the generated id in the parameter coupon object inside insertCouponToDatebase
 		}
 	}
@@ -63,7 +66,7 @@ public class CouponDBDAO implements CouponDAO
 	public void removeCoupon(Coupon coupon) throws SQLException, ClassNotFoundException, InterruptedException, DuplicateEntryException, NullConnectionException,UnAvailableCouponException,NullPointerException
 	{
 		Connection tempConn = pool.getConnection();
-		if(isCouponExist(coupon))
+		if(isCouponExist(coupon,tempConn))
 		{
 			//deleting the coupon from coupon table
 			Statement  tempDeleteStatement = tempConn.createStatement();
@@ -97,7 +100,7 @@ public class CouponDBDAO implements CouponDAO
 	{
 		Connection tempConn = pool.getConnection();
 
-		if(isCouponExist(coupon))
+		if(isCouponExist(coupon,tempConn))
 		{
 			PreparedStatement preparedStmt = tempConn.prepareStatement(CouponSqlQueries.UPDATE_COUPON_WHERE_ID);
 			preparedStmt.setString (1, converter.dateToString(coupon.getEndDate()));
@@ -223,9 +226,9 @@ public class CouponDBDAO implements CouponDAO
 	 * @return return true if coupon title is exist in the database , else return false
 	 */
 	@Override
-	public boolean isCouponExist(Coupon coupon) throws SQLException , NullPointerException
+	public boolean isCouponExist(Coupon coupon,Connection tempConn) throws SQLException , NullPointerException
 	{
-		Connection tempConn = pool.getConnection();
+		//Connection tempConn = pool.getConnection();
 		Statement  tempStatement = tempConn.createStatement();
 		ResultSet  tempRs;
 		try
@@ -233,7 +236,7 @@ public class CouponDBDAO implements CouponDAO
 			tempRs = tempStatement.executeQuery(String.format(CouponSqlQueries.SELECT_ALL_WHERE_COUPON_TITLE,coupon.getTitle()));
 			if(tempRs.next())
 			{
-				pool.returnConnection(tempConn);	
+				//pool.returnConnection(tempConn);	
 				return true;
 			}
 		}
@@ -241,7 +244,7 @@ public class CouponDBDAO implements CouponDAO
 		{
 			return false;
 		}
-		pool.returnConnection(tempConn);	
+		//pool.returnConnection(tempConn);	
 		return false;
 	}
 	//---------------------------------------------------------------------------------------------
@@ -250,9 +253,9 @@ public class CouponDBDAO implements CouponDAO
 	 * @param coupon coupon object instance 
 	 */
 	@Override
-	public void insertCouponToDatabase(Coupon coupon) throws SQLException 
+	public void insertCouponToDatabase(Coupon coupon,Connection tempConn) throws SQLException 
 	{
-		Connection tempConn = pool.getConnection();
+		//Connection tempConn = pool.getConnection();
 
 		//creating the preparedStatement
 		PreparedStatement tempPreparedStatement = tempConn.prepareStatement(CouponSqlQueries.INSERT_COUPON,Statement.RETURN_GENERATED_KEYS);
@@ -277,7 +280,7 @@ public class CouponDBDAO implements CouponDAO
 			coupon.setId(id.getInt(1));
 		}
 
-		pool.returnConnection(tempConn);
+		//pool.returnConnection(tempConn);
 
 		System.out.println("coupon : " +coupon.getTitle() + " added successfully");
 
